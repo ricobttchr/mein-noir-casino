@@ -180,3 +180,27 @@ label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing:
 }
 .l-step.act { color: #000; background: var(--prm); box-shadow: 0 0 15px var(--prm); transform: scale(1.05); }
 .l-step.flash { background: #fff; color: #000; } /* Für das Blinken */
+/* --- BUCHSTABEN-SYMBOLE (Low Pays) --- */
+.sym-let { 
+    font-family: "Georgia", serif; 
+    font-weight: 900; 
+    font-size: 55px; 
+    text-shadow: 2px 2px 0 #000, 0 0 15px rgba(255,255,255,0.2); 
+}
+.sym-A { color: #FF3333; } /* Rot */
+.sym-K { color: #33FF33; } /* Grün */
+.sym-Q { color: #FF9933; } /* Orange */
+.sym-J { color: #3399FF; } /* Blau */
+
+/* --- FIX FÜR GAMBLE BUTTONS --- */
+.gamble-btns { 
+    display: flex; 
+    gap: 15px; 
+    margin-top: 25px; 
+    width: 100%; 
+    max-width: 350px; 
+}
+.gamble-btns .btn { 
+    padding: 15px 10px; 
+    font-size: 13px; 
+}
