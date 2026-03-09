@@ -2,10 +2,11 @@
    NOIR ARENA - MASTER CONTROLLER
    ========================================== */
 
-import { BookSlot } from './games/casino/book.js';
-import { loadState, getMoney } from './core/state.js';
+// NEU: addMoney hinzugefügt!
+import { loadState, getMoney, addMoney } from './core/state.js';
 import { updateHUD, initNavigation, showToast, setActiveNav } from './core/ui.js';
 import { Slots } from './games/casino/slots.js';
+import { BookSlot } from './games/casino/book.js'; 
 
 const appRoot = document.getElementById('app-root');
 
@@ -28,7 +29,6 @@ function initApp() {
 async function handleRoute(route) {
     console.log(`Routing: Wechsel zu Modul [${route}]`);
     
-    // NEU: Menü links sofort updaten!
     setActiveNav(route);
     
     appRoot.style.opacity = '0';
@@ -37,16 +37,16 @@ async function handleRoute(route) {
         appRoot.innerHTML = '';
 
         switch(route) {
-              case 'book':
-    appRoot.innerHTML = BookSlot.render();
-    BookSlot.init();
-    break;
             case 'lobby':
                 renderLobby();
                 break;
             case 'slots':
                 appRoot.innerHTML = Slots.render();
                 Slots.init();
+                break;
+            case 'book': 
+                appRoot.innerHTML = BookSlot.render();
+                BookSlot.init();
                 break;
             default:
                 renderPlaceholder(route);
@@ -72,7 +72,7 @@ function renderLobby() {
                 <div class="pnl" style="text-align:center;">
                     <div style="font-size:50px; margin-bottom:20px;">🎰</div>
                     <h3 style="color:var(--prm); letter-spacing:2px; margin-bottom:15px;">PRESTIGE SLOTS</h3>
-                    <p style="font-size:12px; color:#666; margin-bottom:25px; line-height:1.5;">Hochauflösende Walzen, Freispiele und Linien-Vorschau.</p>
+                    <p style="font-size:12px; color:#666; margin-bottom:25px; line-height:1.5;">Classic & Book of Noir. Hochauflösende Walzen und Freispiele.</p>
                     <button class="btn b-prm" id="lobby-slots-btn">JETZT SPIELEN</button>
                 </div>
                 
@@ -82,11 +82,25 @@ function renderLobby() {
                     <p style="font-size:12px; color:#666; margin-bottom:25px; line-height:1.5;">Bald verfügbar: Der ultimative Klassiker in High-End-Grafik.</p>
                     <button class="btn b-drk" disabled>IN ARBEIT</button>
                 </div>
+
+                <div class="pnl" style="text-align:center; border-color: rgba(255,255,255,0.1);">
+                    <div style="font-size:50px; margin-bottom:20px;">🏧</div>
+                    <h3 style="color:#fff; letter-spacing:2px; margin-bottom:15px;">BANK / ATM</h3>
+                    <p style="font-size:12px; color:#666; margin-bottom:25px; line-height:1.5;">Guthaben aufgebraucht? Lade dein Konto für Testzwecke wieder auf.</p>
+                    <button class="btn b-acc" id="lobby-bank-btn" style="color:#000;">+ 5.000 € AUFLADEN</button>
+                </div>
             </div>
         </div>
     `;
 
     document.getElementById('lobby-slots-btn')?.addEventListener('click', () => handleRoute('slots'));
+    
+    // NEU: Funktion für den Geldautomaten
+    document.getElementById('lobby-bank-btn')?.addEventListener('click', () => {
+        addMoney(5000);
+        window.dispatchEvent(new CustomEvent('updateHUD'));
+        showToast('5.000 € wurden eingezahlt!', 'info');
+    });
 }
 
 function renderPlaceholder(name) {
@@ -104,5 +118,4 @@ function renderPlaceholder(name) {
 
 window.addEventListener('updateHUD', () => updateHUD(getMoney()));
 document.addEventListener('DOMContentLoaded', initApp);
-
 window.noirRoute = handleRoute;
