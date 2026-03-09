@@ -1,67 +1,73 @@
-/* ==========================================
-   NOIR ARENA - MAIN CONTROLLER & ROUTER
-   ========================================== */
-
 import { loadState, getMoney } from './core/state.js';
 import { updateHUD, initNavigation, showToast } from './core/ui.js';
 
-// Das ist unser mittlerer Bereich, wo die Spiele landen
 const appRoot = document.getElementById('app-root');
 
-// Wird ausgeführt, sobald die Seite geladen ist
 function initApp() {
-    loadState();                // Spielstand laden
-    updateHUD(getMoney());      // 5.000 € oben eintragen
+    console.log("Arena Initialisierung...");
+    loadState();
     
-    // Navigation scharfschalten
-    initNavigation(handleRoute);
-    
-    // Startbildschirm laden
-    handleRoute('lobby');
-    
-    showToast('Noir System online. Willkommen.', 'info');
+    // Kleiner Timer, damit der Browser Zeit hat, alles zu ordnen
+    setTimeout(() => {
+        updateHUD(getMoney());
+        initNavigation(handleRoute);
+        handleRoute('lobby');
+        showToast('System bereit. Willkommen im Noir.', 'info');
+    }, 100);
 }
 
-// Unser dynamischer Router
 async function handleRoute(route) {
-    // Kurzer Ladebildschirm
-    appRoot.innerHTML = '<div style="color:var(--prm); text-align:center; padding:50px; font-weight:300; letter-spacing:2px;">LOADING MODULE...</div>';
+    // Elegant wegschalten
+    appRoot.style.opacity = '0';
     
-    try {
-        // Hier passiert die Magie: Je nachdem, worauf du klickst, laden wir einen anderen Screen.
-        // Sobald wir die Spiele-Dateien bauen, importieren wir sie hier.
+    setTimeout(() => {
         switch(route) {
             case 'lobby':
                 appRoot.innerHTML = `
                     <div class="screen act">
                         <div class="pnl" style="background: radial-gradient(circle at top right, rgba(212,175,55,0.08), transparent);">
-                            <h1 style="font-size:36px; font-weight:300; letter-spacing:2px; margin-bottom:15px; color:#fff;">Noir Arena Lounge</h1>
-                            <p style="color:#aaa; font-size:15px; line-height:1.6; font-weight:300; max-width: 800px;">
-                                Modulares System geladen. Wähle eine Kategorie auf der linken Seite.
+                            <h1 style="font-size:38px; font-weight:300; letter-spacing:4px; margin-bottom:10px; color:#fff;">NOIR <span style="color:var(--prm); font-weight:900;">LOUNGE</span></h1>
+                            <p style="color:#888; font-size:16px; font-weight:300; max-width: 700px; line-height:1.6;">
+                                Willkommen in der privaten Arena. Hier werden Vermögen geschmiedet und Legenden geschrieben. 
+                                Wählen Sie ein Modul, um zu beginnen.
                             </p>
                         </div>
-                    </div>
-                `;
-                break;
-                
-            default:
-                // Platzhalter für alle Spiele, die wir noch nicht gebaut haben
-                appRoot.innerHTML = `
-                    <div class="screen act">
-                        <div class="pnl" style="text-align:center; padding: 100px 20px;">
-                            <h2 style="color:var(--sec); letter-spacing: 2px;">MODUL [${route.toUpperCase()}]</h2>
-                            <p style="color:#666; margin-top:15px;">Wird als nächstes entwickelt und hier eingehängt.</p>
+
+                        <div class="grid">
+                            <div class="pnl" style="text-align:center;">
+                                <div style="font-size:40px; margin-bottom:15px;">🎰</div>
+                                <h3 style="color:var(--prm); letter-spacing:2px; margin-bottom:15px;">PRESTIGE SLOTS</h3>
+                                <p style="font-size:12px; color:#666; margin-bottom:20px;">Hohe Varianz. Echte Gewinnlinien. 96% RTP.</p>
+                                <button class="btn b-prm" onclick="window.dispatchEvent(new CustomEvent('nav', {detail: 'slots'}))">JETZT SPIELEN</button>
+                            </div>
+                            
+                            <div class="pnl" style="text-align:center;">
+                                <div style="font-size:40px; margin-bottom:15px;">🎡</div>
+                                <h3 style="color:var(--sec); letter-spacing:2px; margin-bottom:15px;">ROULETTE</h3>
+                                <p style="font-size:12px; color:#666; margin-bottom:20px;">Der Klassiker. Setzen Sie auf Sieg.</p>
+                                <button class="btn b-sec" onclick="window.dispatchEvent(new CustomEvent('nav', {detail: 'roulette'}))">ZUM TISCH</button>
+                            </div>
                         </div>
                     </div>
                 `;
                 break;
+
+            default:
+                appRoot.innerHTML = `
+                    <div class="screen act">
+                        <div class="pnl" style="text-align:center; padding: 100px 0;">
+                            <h2 style="color:var(--prm); letter-spacing:4px;">MODUL IN ENTWICKLUNG</h2>
+                            <p style="color:#666; margin-top:20px;">Das System ${route.toUpperCase()} wird gerade kalibriert.</p>
+                            <button class="btn b-drk" style="margin-top:30px; width:auto;" onclick="window.dispatchEvent(new CustomEvent('nav', {detail: 'lobby'}))">ZURÜCK ZUR LOUNGE</button>
+                        </div>
+                    </div>
+                `;
         }
-        
-    } catch (error) {
-        console.error("Fehler beim Laden der Route:", error);
-        showToast('System Error beim Laden.', 'error');
-    }
+        appRoot.style.opacity = '1';
+    }, 200);
 }
 
-// App starten
+// Damit die Buttons in der Lobby auch funktionieren
+window.addEventListener('nav', (e) => handleRoute(e.detail));
+
 document.addEventListener('DOMContentLoaded', initApp);
