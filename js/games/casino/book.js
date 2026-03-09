@@ -35,24 +35,21 @@ const Snd = {
 
 export const BookSlot = {
     config: {
-        // High Volatility Profil (Ägypten Thema)
         symbolWeights: {
-            '10': 45, 'J': 40, 'Q': 35, 'K': 30, 'A': 25, // Low Pays
-            '🦅': 12, '🐕': 10, '🛕': 6, '🤠': 3,          // High Pays
-            '📘': 5                                      // Scatter & Wild
+            '10': 45, 'J': 40, 'Q': 35, 'K': 30, 'A': 25, 
+            '🦅': 12, '🐕': 10, '🛕': 6, '🤠': 3,          
+            '📘': 5                                      
         },
         spinDuration: 2000,
-        // 10 Klassische Linien
-        lines: [[1,1,1,1,1],[0,0,0,0,0],[2,2,2,2,2],[0,1,2,1,0],[2,1,0,1,2],[0,0,1,0,0],[2,2,1,2,2],[1,0,0,0,1],[1,2,2,2,1],[0,1,1,1,0]],
-        // Risikoleiter Stufen
-        ladderSteps: [0, 2, 4, 8, 12, 20, 40, 80, 140] 
+        lines: [[1,1,1,1,1],[0,0,0,0,0],[2,2,2,2,2],[0,1,2,1,0],[2,1,0,1,2],[0,0,1,0,0],[2,2,1,2,2],[1,0,0,0,1],[1,2,2,2,1],[0,1,1,1,0]]
     },
     
     symbolPool: [], isSpinning: false, isAuto: false, 
     freeSpins: 0, currentBet: 0,
-    specialSymbol: null, // Für die Freispiele
+    specialSymbol: null, 
 
     gambleActive: false, currentLadderIdx: 0, gambleInterval: null, flashState: false,
+    dynamicSteps: [], // NEU: Speichert die individuelle Leiter für diesen Gewinn
 
     render() {
         return `
@@ -77,7 +74,7 @@ export const BookSlot = {
 
                         <div class="slot-modal" id="sl-info-modal">
                             <h3 style="color:var(--prm); margin-bottom:15px; border-bottom:1px solid var(--prm); padding-bottom:10px; letter-spacing:2px;">BOOK OF NOIR PAYTABLE</h3>
-                            <div class="pt-row"><span class="pt-sym sym-book-anim" style="font-size:24px;">📘</span><span>Scatter/Wild: 3+ lösen 10 Freispiele mit Spezial-Symbol aus.</span></div>
+                            <div class="pt-row"><span class="pt-sym sym-book-anim" style="font-size:24px;">📘</span><span>Scatter/Wild: 3+ lösen 10 Freispiele aus.</span></div>
                             <div class="pt-row"><span class="pt-sym sym-high">🤠</span><span>5x Vollbild: 5000x | 4x: 1000x | 3x: 100x | 2x: 10x</span></div>
                             <div class="pt-row"><span class="pt-sym sym-high">🛕</span><span>5x Vollbild: 2000x | 4x: 400x | 3x: 40x | 2x: 5x</span></div>
                             <div class="pt-row"><span class="pt-sym sym-high">🦅🐕</span><span>5x Vollbild: 750x | 4x: 100x | 3x: 30x | 2x: 5x</span></div>
@@ -197,7 +194,7 @@ export const BookSlot = {
 
         this.isSpinning = true;
         document.getElementById('sl-btn-spin').disabled = true;
-        document.getElementById('sl-btn-auto').disabled = false; // Bleibt klickbar für Abbruch
+        document.getElementById('sl-btn-auto').disabled = false; 
 
         document.getElementById('sl-display').innerText = this.freeSpins > 0 ? `FREE SPIN` : "SPINNING...";
         document.getElementById('sl-display').style.color = 'var(--sec)';
@@ -210,14 +207,12 @@ export const BookSlot = {
 
         for(let i=0; i<5; i++) {
             let html = '';
-            // Blur-Effekt beim Drehen mit echten Symbolen
             for(let j=0; j<15; j++) {
                 const rs = this.getRandomSymbol();
                 if(['10','J','Q','K','A'].includes(rs)) html += `<div class="sl-sym" style="filter:blur(3px); opacity:0.6;"><span class="sym-let-book sym-${rs}">${rs}</span></div>`;
                 else if(['🦅','🐕','🛕','🤠'].includes(rs)) html += `<div class="sl-sym" style="filter:blur(3px); opacity:0.6;"><span class="sym-high">${rs}</span></div>`;
                 else html += `<div class="sl-sym" style="filter:blur(3px); opacity:0.6;">${rs}</div>`;
             }
-            // Reale Ergebnisse
             for(let k=0; k<3; k++) {
                 const s = this.getRandomSymbol();
                 grid[i].push(s);
@@ -243,12 +238,10 @@ export const BookSlot = {
         const w = this.canvas.clientWidth / 5;
         const h = this.canvas.clientHeight / 3;
 
-        // 1. Scatter zählen
         grid.forEach(col => col.forEach(s => { if(s === '📘') scatters++; }));
 
         if(scatters >= 3) {
             Snd.win();
-            // Scatter Gewinn (basiert auf Gesamteinsatz!)
             totalWin += this.currentBet * activeLines * (scatters === 3 ? 2 : scatters === 4 ? 20 : 200);
             this.freeSpins += 10;
             
@@ -262,24 +255,23 @@ export const BookSlot = {
             }
         }
 
-        // 2. Normale Linien (Buch ist Wild!)
         for(let i=0; i < linesToCheck; i++) {
             const p = this.config.lines[i];
             let targetSym = grid[0][p[0]], match = 1;
 
-            if(targetSym === '📘') { // Finde erstes Nicht-Wild
+            if(targetSym === '📘') { 
                 if(grid[1][p[1]] !== '📘') targetSym = grid[1][p[1]];
                 else if(grid[2][p[2]] !== '📘') targetSym = grid[2][p[2]];
             }
 
-            if(targetSym === '📘') targetSym = '10'; // Nur Wilds auf der Linie -> zahlt wie das niedrigste Symbol
+            if(targetSym === '📘') targetSym = '10'; 
 
             for(let c=1; c<5; c++) {
                 const currentSym = grid[c][p[c]];
                 if(currentSym === targetSym || currentSym === '📘') match++; else break;
             }
 
-            if(match >= 2) { // Berechne Gewinn
+            if(match >= 2) { 
                 let mult = 0;
                 if(['🤠'].includes(targetSym)) mult = match===2?10 : match===3?100 : match===4?1000 : 5000;
                 else if(['🛕'].includes(targetSym)) mult = match===2?5 : match===3?40 : match===4?400 : 2000;
@@ -294,8 +286,7 @@ export const BookSlot = {
             }
         }
 
-        // 3. EXPANDING SYMBOL LOGIK (Nur in Freispielen)
-        if(this.specialSymbol && scatters < 3) { // Nicht expandieren, wenn gerade Freispiele gewonnen wurden
+        if(this.specialSymbol && scatters < 3) { 
             let reelsWithSymbol = [];
             for(let i=0; i<5; i++) {
                 if(grid[i].includes(this.specialSymbol)) reelsWithSymbol.push(i);
@@ -315,7 +306,6 @@ export const BookSlot = {
                     this.reels[rIdx].appendChild(overlay);
                 });
 
-                // Vollbild Gewinn berechnen
                 let mult = 0;
                 let match = reelsWithSymbol.length;
                 let sym = this.specialSymbol;
@@ -325,7 +315,7 @@ export const BookSlot = {
                 else if(['A','K'].includes(sym) && match>=3) mult = match===3?5 : match===4?40 : 150;
                 else if(['10','J','Q'].includes(sym) && match>=3) mult = match===3?5 : match===4?25 : 100;
                 
-                const expandWin = (this.currentBet * mult) * activeLines; // Zahlt auf ALLEN Linien
+                const expandWin = (this.currentBet * mult) * activeLines; 
                 totalWin += expandWin;
 
                 await new Promise(r => setTimeout(r, 1500));
@@ -333,14 +323,12 @@ export const BookSlot = {
             }
         }
 
-        // 4. Auszahlung / Risiko
         if(totalWin > 0) {
             Snd.win();
             document.getElementById('sl-display').innerText = `GEWINN: ${formatMoney(totalWin)}`;
             document.getElementById('sl-display').style.color = 'var(--suc)';
             if(totalWin >= this.currentBet * activeLines * 50) this.showBigWinOverlay("MEGA WIN!");
 
-            // Automatisches Sammeln im Freispiel oder AUTO
             if(this.freeSpins > 0 || this.isAuto) {
                 addMoney(totalWin);
                 window.dispatchEvent(new CustomEvent('updateHUD'));
@@ -376,19 +364,26 @@ export const BookSlot = {
         setTimeout(() => overlay.remove(), 3000);
     },
 
-    // --- RISIKOLEITER ENGINE ---
+    // --- DYNAMISCHE RISIKOLEITER ENGINE ---
     initGamble(winAmount) {
         this.gambleActive = true;
         document.getElementById('sl-controls').style.display = 'none';
         
-        // Buttons freischalten
         document.getElementById('btn-gmb-collect').disabled = false;
         document.getElementById('btn-gmb-risk').disabled = false;
         
-        const targetValue = winAmount / this.currentBet;
-        this.currentLadderIdx = this.config.ladderSteps.findIndex(s => s >= targetValue);
-        if(this.currentLadderIdx === -1) this.currentLadderIdx = this.config.ladderSteps.length - 1;
-        if(this.currentLadderIdx === 0) this.currentLadderIdx = 1; 
+        this.dynamicSteps = [
+            0,
+            winAmount,
+            winAmount * 2,
+            winAmount * 4,
+            winAmount * 8,
+            winAmount * 16,
+            winAmount * 32,
+            winAmount * 64
+        ];
+        
+        this.currentLadderIdx = 1; 
 
         this.renderLadder();
         document.getElementById('gamble-ui').style.display = 'flex';
@@ -399,8 +394,7 @@ export const BookSlot = {
         const container = document.getElementById('ladder-container');
         container.innerHTML = '';
         
-        this.config.ladderSteps.forEach((stepMult, idx) => {
-            const val = stepMult * this.currentBet;
+        this.dynamicSteps.forEach((val, idx) => {
             const div = document.createElement('div');
             div.className = `l-step ${idx === this.currentLadderIdx ? 'act' : ''}`;
             div.id = `l-step-${idx}`;
@@ -414,8 +408,8 @@ export const BookSlot = {
         this.gambleInterval = setInterval(() => {
             Snd.ladder(); 
             this.flashState = !this.flashState;
-            const upIdx = Math.min(this.currentLadderIdx + 1, this.config.ladderSteps.length - 1);
-            const downIdx = this.currentLadderIdx === 1 ? 0 : this.currentLadderIdx - 1;
+            const upIdx = Math.min(this.currentLadderIdx + 1, this.dynamicSteps.length - 1);
+            const downIdx = 0; 
             
             document.querySelectorAll('.l-step').forEach(el => el.classList.remove('flash'));
             if(this.flashState) {
@@ -430,7 +424,6 @@ export const BookSlot = {
         clearInterval(this.gambleInterval);
         document.querySelectorAll('.l-step').forEach(el => el.classList.remove('flash'));
 
-        // Sofort sperren gegen Spamming
         document.getElementById('btn-gmb-collect').disabled = true;
         document.getElementById('btn-gmb-risk').disabled = true;
 
@@ -438,12 +431,12 @@ export const BookSlot = {
         
         if(won) {
             Snd.ladderWin();
-            this.currentLadderIdx = Math.min(this.currentLadderIdx + 1, this.config.ladderSteps.length - 1);
+            this.currentLadderIdx = Math.min(this.currentLadderIdx + 1, this.dynamicSteps.length - 1);
             this.renderLadder();
             document.getElementById('sl-display').innerText = `GEKLETTERT!`;
             
-            if(this.currentLadderIdx === this.config.ladderSteps.length - 1) {
-                setTimeout(() => this.collectGamble(), 1000);
+            if(this.currentLadderIdx === this.dynamicSteps.length - 1) {
+                setTimeout(() => this.collectGamble(), 1000); 
             } else {
                 setTimeout(() => {
                     document.getElementById('btn-gmb-collect').disabled = false;
@@ -463,7 +456,7 @@ export const BookSlot = {
     },
 
     collectGamble() {
-        const val = this.config.ladderSteps[this.currentLadderIdx] * this.currentBet;
+        const val = this.dynamicSteps[this.currentLadderIdx]; 
         if(val > 0) {
             addMoney(val);
             window.dispatchEvent(new CustomEvent('updateHUD'));
@@ -483,7 +476,7 @@ export const BookSlot = {
         
         if(this.freeSpins > 0 || this.isAuto) setTimeout(() => this.spin(), 800);
         else if (this.freeSpins === 0 && this.specialSymbol) {
-            this.specialSymbol = null; // Freispiele vorbei
+            this.specialSymbol = null; 
             this.updateFreeSpinsUI();
         }
     },
