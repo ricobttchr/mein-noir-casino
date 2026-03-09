@@ -90,4 +90,55 @@ export function updateStat(key, amount = 1) {
 // Gibt das komplette State-Objekt (nur zum Lesen) zurück
 export function getState() {
     return state;
+
+}
+/* ==========================================
+   NOIR ARENA - STATE MANAGER (UPGRADED)
+   ========================================== */
+
+let state = {
+    money: 5000,
+    stats: { slotsSpins: 0, bigWins: 0 }
+};
+
+export function loadState() {
+    const saved = localStorage.getItem('noir_state');
+    if (saved) state = JSON.parse(saved);
+}
+
+function save() {
+    localStorage.setItem('noir_state', JSON.stringify(state));
+}
+
+export function getMoney() { return state.money; }
+
+export function addMoney(amount) {
+    state.money += amount;
+    save();
+}
+
+export function removeMoney(amount) {
+    if (state.money >= amount) {
+        state.money -= amount;
+        save();
+        return true;
+    }
+    return false;
+}
+
+export function updateStat(key) {
+    if (state.stats[key] !== undefined) {
+        state.stats[key]++;
+        save();
+    }
+}
+
+// NEU: Der radikale Reset
+export function resetSystem() {
+    localStorage.removeItem('noir_state'); // Löscht den Speicher
+    state = {
+        money: 5000,
+        stats: { slotsSpins: 0, bigWins: 0 }
+    };
+    save(); // Legt neuen Startzustand fest
 }
