@@ -17,7 +17,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
 body { background: var(--bg); color: #e2e8f0; font-family: var(--font-ui); height: 100vh; display: flex; overflow: hidden; letter-spacing: 0.5px; }
 
-/* --- SIDEBAR (Links) --- */
+/* --- SIDEBAR --- */
 aside { width: var(--sb-width); background: rgba(8, 8, 10, 0.95); border-right: 1px solid var(--brd); display: flex; flex-direction: column; z-index: 400; padding: 30px 0; box-shadow: 5px 0 30px rgba(0,0,0,0.8); }
 .logo-area { padding: 0 30px 30px 30px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px;}
 .logo { font-size: 32px; font-weight: 300; letter-spacing: 6px; color: var(--acc); text-transform: uppercase; }
@@ -30,271 +30,123 @@ aside { width: var(--sb-width); background: rgba(8, 8, 10, 0.95); border-right: 
 .nav-it:hover { background: rgba(255,255,255,0.03); color: #fff; }
 .nav-it.act { background: linear-gradient(90deg, rgba(212,175,55,0.1), transparent); color: var(--prm); border-left-color: var(--prm); font-weight: 600; }
 
-/* --- MAIN LAYOUT (Rechts) --- */
+/* --- MAIN LAYOUT --- */
 .main-wrapper { flex: 1; display: flex; flex-direction: column; position: relative; }
-
-header { height: 80px; background: rgba(5, 5, 5, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: flex-end; align-items: center; padding: 0 40px; z-index: 500; }
+header { height: 80px; background: rgba(5, 5, 5, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: flex-end; align-items: center; padding: 0 40 header 40px; z-index: 500; }
 .hud { display: flex; gap: 40px; align-items: center; }
-.hud-bx { text-align: right; }
-.hud-val { font-size: 22px; font-weight: 300; color: var(--prm); letter-spacing: 1px; transition: color 0.3s ease; }
-.hud-pas { font-size: 12px; color: var(--sec); font-weight: 400; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; }
+.hud-val { font-size: 22px; font-weight: 300; color: var(--prm); letter-spacing: 1px; }
+.hud-pas { font-size: 12px; color: var(--sec); text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; }
 
-main#app-root { flex: 1; overflow-y: auto; padding: 40px; position: relative;}
+main#app-root { flex: 1; overflow-y: auto; padding: 40px; position: relative; transition: opacity 0.2s ease; }
 
-/* --- WIEDERVERWENDBARE BAUTEILE (Panels, Grid, Buttons) --- */
+/* --- UI ELEMENTS --- */
 .screen { display: flex; flex-direction: column; gap: 30px; animation: fIn 0.4s ease-out; max-width: 1400px; margin: 0 auto; width: 100%; }
 @keyframes fIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
-.pnl { background: var(--pnl); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 35px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); backdrop-filter: blur(20px); }
+.pnl { background: var(--pnl); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); backdrop-filter: blur(20px); }
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; }
-.ttl { font-size: 16px; color: var(--sec); font-weight: 600; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between; align-items:center;}
+.ttl { font-size: 16px; color: var(--sec); font-weight: 600; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
-input, select { background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); color: var(--prm); padding: 15px 20px; border-radius: 8px; font-family: monospace; font-size: 16px; width: 100%; outline: none; transition: 0.3s; }
-input:focus { border-color: var(--prm); background: rgba(212,175,55,0.05); }
-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: block; }
+input { background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); color: var(--prm); padding: 12px; border-radius: 8px; outline: none; width: 100%; }
+label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; display: block; }
 
-.btn { padding: 18px 25px; border-radius: 8px; font-weight: 600; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; border: none; font-size: 13px; width: 100%; transition: all 0.2s ease; text-align: center; }
-.btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
-.btn:active:not(:disabled) { transform: translateY(0); }
-.btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
-.b-prm { background: linear-gradient(135deg, #CFB53B, #8A7322); color: #000; box-shadow: 0 5px 15px rgba(212,175,55,0.2); } 
-.b-sec { background: transparent; border: 1px solid var(--prm); color: var(--prm); } 
-.b-acc { background: #fff; color: #000; } 
+.btn { padding: 15px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; border: none; transition: 0.2s; font-size: 12px; }
+.b-prm { background: linear-gradient(135deg, #CFB53B, #8A7322); color: #000; }
+.b-sec { background: transparent; border: 1px solid var(--prm); color: var(--prm); }
 .b-drk { background: #1a1a1c; border: 1px solid #333; color: #aaa; }
 .b-err { background: var(--err); color: #fff; }
+.b-acc { background: #fff; color: #000; }
 
-/* --- FX & TOAST BENACHRICHTIGUNGEN --- */
-#fx-layer { position: fixed; inset: 0; pointer-events: none; z-index: 8000; width: 100%; height: 100%; }
-#toast-box { position: fixed; bottom: 40px; right: 40px; z-index: 9999; display: flex; flex-direction: column; gap: 15px; pointer-events: none; align-items: flex-end; }
-.tst { background: rgba(20,20,25,0.95); color: var(--prm); border: 1px solid var(--brd); padding: 18px 30px; border-radius: 8px; font-weight: 400; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); animation: sUp 0.4s ease forwards; backdrop-filter: blur(10px); border-left: 4px solid var(--prm); }
-@keyframes sUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
-
-.val-gld { font-size: 28px; color: var(--prm); font-weight: 300; letter-spacing: 1px; }
-
-/* --- SPIEL-SPEZIFISCHE HILFSKLASSEN --- */
-.mdl-ht { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9000; justify-content:center; align-items:center; backdrop-filter: blur(5px);}
-.mdl-cnt { background:var(--pnl); padding:40px; border-radius:16px; border:1px solid var(--prm); max-width:500px; color:#fff; box-shadow: 0 20px 50px rgba(0,0,0,0.9);}
+/* --- TOASTS --- */
+#toast-box { position: fixed; bottom: 40px; right: 40px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+.tst { background: #111; color: var(--prm); border-left: 4px solid var(--prm); padding: 15px 25px; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: sUp 0.3s ease forwards; }
+@keyframes sUp { from{transform:translateX(50px);opacity:0} to{transform:translateX(0);opacity:1} }
 
 /* ==========================================
-   SPIEL-MODULE: PRESTIGE SLOTS
+   SLOTS (CLASSIC & BOOK)
    ========================================== */
-.slot-box { 
-    width: 100%; 
-    height: 400px; 
-    background: #050505; 
-    border: 2px solid var(--brd); 
-    border-radius: 12px; 
-    display: flex; 
-    gap: 8px; 
-    position: relative; 
-    overflow: hidden; 
-    box-shadow: inset 0 0 50px rgba(0,0,0,0.9); 
-}
-
+.slot-box { width: 100%; height: 400px; background: #000; border: 2px solid var(--brd); border-radius: 12px; display: flex; position: relative; overflow: hidden; }
 #sl-canvas { position: absolute; inset: 0; z-index: 10; pointer-events: none; width: 100%; height: 100%; }
+.sl-rl { flex: 1; display: flex; flex-direction: column; }
+.sl-sym { flex: 0 0 33.333%; display: flex; align-items: center; justify-content: center; font-size: 55px; }
 
-.sl-rl { 
-    flex: 1; 
-    display: flex; 
-    flex-direction: column; 
-    will-change: transform; 
-    padding-top: 5px;
-}
+/* Slot Symbols */
+.sym-let { font-family: serif; font-weight: 900; font-size: 50px; }
+.sym-A { color: #ff4d4d; } .sym-K { color: #4dff4d; } .sym-Q { color: #ff944d; } .sym-J { color: #4da6ff; }
+.sym-let-book { font-family: "Palatino", serif; font-weight: 900; }
 
-.sl-sym { 
-    flex: 0 0 33.333%; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    font-size: 60px; 
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent); 
-    margin-bottom: 2px; 
-    border-radius: 8px; 
-}
+/* Specials */
+.sym-book-anim { animation: bookFloat 2s infinite ease-in-out; filter: drop-shadow(0 0 15px gold); }
+@keyframes bookFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+.expanding-overlay { position: absolute; inset:0; background:rgba(0,0,0,0.9); z-index:20; display:flex; align-items:center; justify-content:center; animation: expandSym 0.5s forwards; border: 2px solid gold; }
+@keyframes expandSym { 0%{transform:scaleY(0)} 100%{transform:scaleY(1)} }
 
-/* --- ANIMATIONEN --- */
-.sym-scatter {
-    animation: spinPulse 1.5s infinite linear;
-    text-shadow: 0 0 20px var(--prm);
-}
-@keyframes spinPulse {
-    0% { transform: scale(1) rotate(0deg); }
-    50% { transform: scale(1.15) rotate(10deg); }
-    100% { transform: scale(1) rotate(0deg); }
-}
+/* Modals & Ladder */
+.slot-modal { position: absolute; inset: 0; background: rgba(0,0,0,0.95); z-index: 200; display: none; flex-direction: column; padding: 30px; }
+.slot-modal.act { display: flex; }
+.pt-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #222; }
 
-.big-win-overlay {
-    position: absolute; inset: 0; background: rgba(0,0,0,0.85);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    z-index: 100; font-size: 55px; color: var(--prm); font-weight: 900;
-    text-shadow: 0 0 40px var(--prm); letter-spacing: 5px;
-    animation: bigWinPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-}
-@keyframes bigWinPop {
-    0% { transform: scale(0.5); opacity: 0; }
-    50% { transform: scale(1.1); opacity: 1; }
-    100% { transform: scale(1); opacity: 1; }
-}
-
-/* --- BUCHSTABEN-SYMBOLE (Low Pays) --- */
-.sym-let { 
-    font-family: "Georgia", serif; 
-    font-weight: 900; 
-    font-size: 55px; 
-    text-shadow: 2px 2px 0 #000, 0 0 15px rgba(255,255,255,0.2); 
-}
-.sym-A { color: #FF3333; } 
-.sym-K { color: #33FF33; } 
-.sym-Q { color: #FF9933; } 
-.sym-J { color: #3399FF; } 
-
-/* --- INFO MODAL (PAYTABLE) --- */
-.slot-modal {
-    position: absolute; inset: 0; background: rgba(5,5,5,0.95); z-index: 200;
-    display: none; flex-direction: column; padding: 20px; color: #fff; overflow-y: auto;
-    border-radius: 12px; backdrop-filter: blur(10px); text-align: left;
-}
-.slot-modal.act { display: flex; animation: fIn 0.3s ease; }
-.pt-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 14px; }
-.pt-sym { font-size: 20px; width: 40px; text-align: center; }
-
-/* --- ECHTE RISIKOLEITER --- */
-.gamble-ladder-ui {
-    position: absolute; inset: 0; background: rgba(0,0,0,0.95); z-index: 50;
-    display: none; flex-direction: column; align-items: center; justify-content: center;
-}
-.ladder-box {
-    display: flex; flex-direction: column-reverse; gap: 2px; background: #111;
-    padding: 5px; border: 2px solid var(--prm); border-radius: 8px; width: 180px;
-}
-.l-step {
-    text-align: center; padding: 4px; font-family: monospace; font-size: 14px; color: #555;
-    background: #000; border: 1px solid #333; font-weight: bold; transition: all 0.1s;
-}
-.l-step.act { color: #000; background: var(--prm); box-shadow: 0 0 15px var(--prm); transform: scale(1.05); }
+.gamble-ladder-ui { position: absolute; inset: 0; background: rgba(0,0,0,0.95); z-index: 50; display: none; flex-direction: column; align-items: center; justify-content: center; }
+.ladder-box { display: flex; flex-direction: column-reverse; gap: 2px; background: #111; padding: 5px; border: 2px solid var(--prm); width: 200px; }
+.l-step { text-align: center; padding: 6px; font-family: monospace; color: #444; background: #000; border: 1px solid #222; font-weight: bold; font-size: 14px; }
+.l-step.act { color: #000; background: var(--prm); box-shadow: 0 0 15px var(--prm); }
 .l-step.flash { background: #fff; color: #000; }
-
-.gamble-btns { 
-    display: flex; gap: 10px; margin-top: 15px; width: 100%; max-width: 250px; 
-}
-.gamble-btns .btn { 
-    padding: 10px 10px; font-size: 12px; 
-}
+.gamble-btns { display: flex; gap: 10px; margin-top: 15px; width: 200px; }
 
 /* ==========================================
-   SPIEL-MODULE: BOOK OF NOIR (UPGRADE)
+   ROULETTE DELUXE
    ========================================== */
-.book-theme {
-    border-color: #b8860b !important;
-    background: radial-gradient(circle at center, #1a1a1c, #050505) !important;
-    box-shadow: inset 0 0 60px rgba(184, 134, 11, 0.2) !important;
-}
+.roulette-wrapper { display: flex; flex-wrap: wrap; gap: 40px; justify-content: center; align-items: flex-start; margin-top: 20px; }
 
-/* --- EDLE NOIR-ÄGYPTEN SYMBOLE --- */
-.sym-let-book { 
-    font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; 
-    font-weight: 900; font-size: 55px; 
-    text-shadow: 2px 2px 0 #000; 
-}
-/* Gold-Töne für Low Pays */
-.sym-10, .sym-J, .sym-Q { color: #8B4513; } /* SaddleBrown */
-.sym-K, .sym-A { color: #CD853F; } /* Peru Gold */
-
-/* High Pays mit Gold-Effekt */
-.sym-high {
-    background: linear-gradient(180deg, #D4AF37, #FFD700, #8B4513);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 0 5px rgba(212,175,55,0.5));
-    font-size: 65px;
-}
-
-/* Animiertes Scatter/Wild Symbol (Das Buch) */
-.sym-book-anim { 
-    animation: bookFloat 2s ease-in-out infinite; 
-    filter: drop-shadow(0 0 15px #FFD700); 
-    font-size: 70px;
-}
-@keyframes bookFloat {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(-8px) rotate(2deg); }
-}
-
-/* Expanding Animation */
-.expanding-overlay {
-    position: absolute; inset: 0; background: rgba(0,0,0,0.92); z-index: 20;
-    display: flex; align-items: center; justify-content: center;
-    animation: expandSym 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-    border: 2px solid #FFD700; border-radius: 8px;
-    box-shadow: 0 0 40px rgba(255,215,0,0.5);
-}
-@keyframes expandSym { 0% { transform: scaleY(0); opacity: 0; } 100% { transform: scaleY(1); opacity: 1; } }
-
-/* --- GEMEINSAME UNTERE KLASSEN (Leiter, Info) --- */
-/* (Diese müssen nur 1x in der style.css stehen, sie gelten für beide Slots) */
-
-/* ==========================================
-   NOIR ROULETTE DELUXE
-   ========================================== */
-.roulette-wrapper {
-    display: flex; flex-direction: row; gap: 40px; align-items: center;
-    justify-content: center; padding: 20px; flex-wrap: wrap;
-}
-
-/* Der Kessel-Bereich */
 .wheel-area { position: relative; width: 450px; height: 450px; }
-#roulette-canvas { 
-    width: 450px; height: 450px; 
-    filter: drop-shadow(0 0 30px rgba(0,0,0,0.8));
+#roulette-canvas { width: 450px; height: 450px; filter: drop-shadow(0 0 20px #000); }
+.wheel-pin { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 4px; height: 40px; background: var(--prm); z-index: 100; box-shadow: 0 0 10px var(--prm); }
+
+.betting-layout { 
+    display: grid; 
+    grid-template-columns: 70px repeat(12, 1fr); 
+    grid-template-rows: repeat(3, 60px) 60px; 
+    gap: 4px; background: rgba(0,0,0,0.4); padding: 12px; 
+    border: 1px solid var(--prm); border-radius: 4px;
 }
 
-.wheel-pin {
-    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-    width: 4px; height: 40px; background: var(--prm); z-index: 100;
-    box-shadow: 0 0 15px var(--prm); border-radius: 2px;
+.table-cell { 
+    background: #0a2e1a; border: 1px solid rgba(212,175,55,0.2); 
+    display: flex; align-items: center; justify-content: center; 
+    font-size: 16px; font-weight: 800; cursor: pointer; position: relative; 
+    transition: 0.2s; min-width: 50px; color: #fff;
 }
-
-/* Das digitale Setzfeld */
-.betting-layout {
-    display: grid; grid-template-columns: 60px repeat(12, 1fr);
-    grid-template-rows: repeat(3, 60px) 50px 50px;
-    gap: 4px; background: rgba(0,0,0,0.3); padding: 10px;
-    border: 2px solid #222; border-radius: 8px; font-family: 'Inter', sans-serif;
-}
-
-.table-cell {
-    background: #0a2e1a; border: 1px solid rgba(255,255,255,0.1);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px; font-weight: 700; cursor: pointer; position: relative;
-    transition: 0.2s; min-width: 45px;
-}
-
-.table-cell:hover { background: #145c34; border-color: var(--prm); }
-.cell-red { background: #800; }
+.table-cell:hover { background: var(--prm); color: #000; }
+.cell-zero { grid-row: 1 / span 3; background: #004d00; border-color: var(--suc); }
+.cell-red { background: #900; }
 .cell-black { background: #111; }
-.cell-zero { grid-row: 1 / span 3; background: #006400; font-size: 20px; }
 
-/* Chip-Anzeige auf dem Feld */
-.chip-overlay {
-    position: absolute; width: 28px; height: 28px; background: var(--prm);
-    color: #000; border-radius: 50%; border: 3px dashed #fff;
-    font-size: 10px; display: flex; align-items: center; justify-content: center;
-    pointer-events: none; font-weight: 900; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+.chip-overlay { 
+    position: absolute; width: 34px; height: 34px; background: #fff; 
+    color: #000; border-radius: 50%; border: 3px solid var(--prm); 
+    font-size: 11px; display: flex; align-items: center; justify-content: center; 
+    z-index: 10; font-weight: 900; box-shadow: 0 4px 8px rgba(0,0,0,0.6); 
 }
 
-/* Chip-Selector unter dem Tisch */
-.chip-rack {
-    display: flex; gap: 15px; margin-top: 20px; justify-content: center;
+.chip-rack { display: flex; gap: 15px; margin-top: 25px; justify-content: center; }
+.chip { 
+    width: 55px; height: 55px; border-radius: 50%; cursor: pointer; 
+    display: flex; align-items: center; justify-content: center; 
+    font-weight: 900; border: 4px dashed rgba(255,255,255,0.2); transition: 0.3s; 
 }
-.chip {
-    width: 50px; height: 50px; border-radius: 50%; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 900; border: 4px dashed rgba(255,255,255,0.3);
-    transition: 0.3s; transform: translateY(0);
-}
-.chip:hover { transform: translateY(-10px); }
+.chip:hover { transform: translateY(-5px); }
 .chip.selected { border-color: #fff; transform: translateY(-10px); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
 
-.c-5 { background: #666; } .c-10 { background: #005; } .c-50 { background: #800; } 
-.c-100 { background: #b8860b; } .c-500 { background: #4b0082; }
+.c-5 { background: #4a4a4a; }
+.c-10 { background: #1e3a8a; }
+.c-50 { background: #991b1b; }
+.c-100 { background: #854d0e; }
+.c-500 { background: #581c87; }
+
+/* Overlay für Big Win */
+.big-win-overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.8);
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    z-index: 500; font-size: 50px; color: var(--prm); font-weight: 900;
+    text-shadow: 0 0 20px var(--prm); white-space: pre;
+}
