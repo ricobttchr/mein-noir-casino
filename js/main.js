@@ -2,6 +2,7 @@
    NOIR ARENA - MASTER CONTROLLER
    ========================================== */
 
+import { BookSlot } from './games/casino/book.js';
 import { loadState, getMoney } from './core/state.js';
 import { updateHUD, initNavigation, showToast, setActiveNav } from './core/ui.js';
 import { Slots } from './games/casino/slots.js';
@@ -36,6 +37,10 @@ async function handleRoute(route) {
         appRoot.innerHTML = '';
 
         switch(route) {
+              case 'book':
+    appRoot.innerHTML = BookSlot.render();
+    BookSlot.init();
+    break;
             case 'lobby':
                 renderLobby();
                 break;
@@ -99,3 +104,5 @@ function renderPlaceholder(name) {
 
 window.addEventListener('updateHUD', () => updateHUD(getMoney()));
 document.addEventListener('DOMContentLoaded', initApp);
+
+window.noirRoute = handleRoute;
