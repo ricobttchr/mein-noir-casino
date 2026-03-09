@@ -1,16 +1,16 @@
 /* ==========================================
-   NOIR ARENA - CORE & LAYOUT
+   NOIR ARENA - CORE STYLES (STABLE)
    ========================================== */
 :root { 
     --bg: #050505; 
-    --pnl: rgba(18, 18, 20, 0.8); 
+    --pnl: rgba(18, 18, 20, 0.85); 
     --prm: #D4AF37; /* Gold */
     --sec: #E5E4E2; /* Platinum */
     --acc: #FFFFFF; 
     --suc: #50C878; 
     --err: #E34234; 
     --brd: rgba(212, 175, 55, 0.2);
-    --font-ui: "Inter", sans-serif;
+    --font-ui: "Inter", -apple-system, sans-serif;
     --sb-width: 280px; 
 }
 
@@ -42,12 +42,19 @@ aside {
 
 .nav-grp { margin-bottom: 25px; }
 .nav-hdr { padding: 0 30px 10px; font-size: 10px; color: #555; text-transform: uppercase; letter-spacing: 2px; }
-.nav-it { padding: 12px 30px; color: #888; font-size: 14px; cursor: pointer; transition: 0.2s; }
+.nav-it { padding: 12px 30px; color: #888; font-size: 14px; cursor: pointer; transition: 0.2s; border-left: 3px solid transparent; }
 .nav-it:hover { color: #fff; background: rgba(255,255,255,0.03); }
-.nav-it.act { color: var(--prm); background: rgba(212,175,55,0.1); border-left: 3px solid var(--prm); font-weight: 600; }
+.nav-it.act { color: var(--prm); background: rgba(212,175,55,0.1); border-left-color: var(--prm); font-weight: 600; }
 
 /* --- MAIN WRAPPER --- */
-.main-wrapper { flex: 1; display: flex; flex-direction: column; position: relative; background: var(--bg); }
+.main-wrapper { 
+    flex: 1; 
+    display: flex; 
+    flex-direction: column; 
+    position: relative; 
+    background: var(--bg); 
+    min-width: 0; 
+}
 
 header { 
     height: 80px; 
@@ -68,8 +75,8 @@ main#app-root {
     flex: 1; 
     overflow-y: auto; 
     padding: 40px; 
-    opacity: 1; /* Sicherstellen, dass es sichtbar ist */
-    transition: opacity 0.3s ease; 
+    opacity: 1; 
+    display: block; 
 }
 
 /* --- UI COMPONENTS --- */
@@ -80,7 +87,7 @@ main#app-root {
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
 .ttl { font-size: 18px; color: var(--prm); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; border-bottom: 1px solid var(--brd); padding-bottom: 10px; }
 
-.btn { padding: 14px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s; }
+.btn { padding: 14px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s; text-align: center; display: inline-block; }
 .b-prm { background: var(--prm); color: #000; }
 .b-err { background: var(--err); color: #fff; }
 .b-drk { background: #1a1a1c; color: #ccc; border: 1px solid #333; }
@@ -94,24 +101,27 @@ input { background: #000; border: 1px solid #333; color: var(--prm); padding: 12
 @keyframes sUp { from{transform:translateX(50px);opacity:0} to{transform:translateX(0);opacity:1} }
 
 /* ==========================================
-   SLOTS & LADDER
+   SLOTS & RISIKOLEITER
    ========================================== */
 .slot-box { width: 100%; height: 420px; background: #000; border: 2px solid var(--brd); border-radius: 8px; display: flex; position: relative; overflow: hidden; }
 #sl-canvas { position: absolute; inset: 0; z-index: 5; pointer-events: none; width: 100%; height: 100%; }
-.sl-rl { flex: 1; display: flex; flex-direction: column; border-right: 1px solid rgba(212,175,55,0.1); }
+.sl-rl { flex: 1; display: flex; flex-direction: column; border-right: 1px solid rgba(212,175,55,0.05); }
 .sl-sym { flex: 0 0 33.333%; display: flex; align-items: center; justify-content: center; font-size: 50px; }
 
 .sym-let { font-family: serif; font-weight: 900; }
 .sym-A { color: #ff4d4d; } .sym-K { color: #4dff4d; } .sym-Q { color: #ff944d; } .sym-J { color: #4da6ff; }
+.sym-let-book { font-family: "Palatino", serif; font-weight: 900; }
 
-.gamble-ladder-ui { position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; }
-.ladder-box { display: flex; flex-direction: column-reverse; gap: 2px; width: 220px; border: 2px solid var(--prm); padding: 5px; background: #111; }
-.l-step { padding: 8px; text-align: center; background: #000; color: #444; font-family: monospace; font-weight: bold; border: 1px solid #222; }
-.l-step.act { background: var(--prm); color: #000; box-shadow: 0 0 15px var(--prm); }
+.gamble-ladder-ui { position: absolute; inset: 0; background: rgba(0,0,0,0.92); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; }
+.ladder-box { display: flex; flex-direction: column-reverse; gap: 2px; width: 220px; border: 2px solid var(--prm); padding: 5px; background: #000; }
+.l-step { padding: 10px; text-align: center; background: #111; color: #444; font-family: monospace; font-weight: bold; border: 1px solid #222; }
+.l-step.act { background: var(--prm); color: #000; box-shadow: 0 0 20px var(--prm); }
 .l-step.flash { background: #fff; color: #000; }
+.gamble-btns { display: flex; gap: 10px; margin-top: 20px; width: 220px; }
 
 .slot-modal { position: absolute; inset: 0; background: rgba(0,0,0,0.95); z-index: 200; display: none; padding: 30px; overflow-y: auto; }
 .slot-modal.act { display: flex; flex-direction: column; }
+.pt-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #222; }
 
 /* ==========================================
    ROULETTE DELUXE
@@ -119,7 +129,7 @@ input { background: #000; border: 1px solid #333; color: var(--prm); padding: 12
 .roulette-wrapper { display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; align-items: flex-start; margin-top: 10px; }
 .wheel-area { position: relative; width: 400px; height: 400px; }
 #roulette-canvas { width: 400px; height: 400px; }
-.wheel-pin { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 4px; height: 35px; background: var(--prm); z-index: 10; }
+.wheel-pin { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 4px; height: 35px; background: var(--prm); z-index: 10; box-shadow: 0 0 10px var(--prm); }
 
 .betting-layout { 
     display: grid; 
@@ -127,8 +137,8 @@ input { background: #000; border: 1px solid #333; color: var(--prm); padding: 12
     grid-template-rows: repeat(3, 55px) 50px; 
     gap: 3px; background: rgba(0,0,0,0.5); padding: 10px; border: 1px solid var(--prm); 
 }
-.table-cell { background: #0a2e1a; border: 1px solid rgba(212,175,55,0.2); display: flex; align-items: center; justify-content: center; font-weight: 800; cursor: pointer; position: relative; color: #fff; }
-.cell-zero { grid-row: 1 / span 3; background: #004d00; }
+.table-cell { background: #0a2e1a; border: 1px solid rgba(212,175,55,0.2); display: flex; align-items: center; justify-content: center; font-weight: 800; cursor: pointer; position: relative; color: #fff; font-size: 14px; }
+.cell-zero { grid-row: 1 / span 3; background: #004d00; border-color: var(--suc); }
 .cell-red { background: #900; }
 .cell-black { background: #111; }
 .table-cell:hover { background: var(--prm); color: #000; }
@@ -137,9 +147,19 @@ input { background: #000; border: 1px solid #333; color: var(--prm); padding: 12
     position: absolute; width: 30px; height: 30px; background: #fff; color: #000; 
     border-radius: 50%; border: 2px solid var(--prm); font-size: 10px; 
     display: flex; align-items: center; justify-content: center; font-weight: 900; 
+    box-shadow: 0 4px 8px #000; z-index: 20;
 }
 
 .chip-rack { display: flex; gap: 10px; margin-top: 20px; justify-content: center; }
 .chip { width: 50px; height: 50px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 900; border: 3px dashed rgba(255,255,255,0.2); transition: 0.2s; }
 .chip.selected { border-color: #fff; transform: translateY(-5px); box-shadow: 0 5px 15px #000; }
 .c-5 { background: #444; } .c-10 { background: #1e3a8a; } .c-50 { background: #991b1b; } .c-100 { background: #854d0e; } .c-500 { background: #581c87; }
+
+/* Specials */
+.big-win-overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.85);
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    z-index: 500; font-size: 45px; color: var(--prm); font-weight: 900;
+    text-shadow: 0 0 20px var(--prm); white-space: pre;
+}
+.sym-book-anim { animation: bookFloat 2s infinite ease-in-out; filter: drop-shadow(0 0 15px gold); }
