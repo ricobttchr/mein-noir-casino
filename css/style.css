@@ -235,48 +235,66 @@ label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing:
 /* (Diese müssen nur 1x in der style.css stehen, sie gelten für beide Slots) */
 
 /* ==========================================
-   SPIEL-MODULE: NOIR ROULETTE
+   NOIR ROULETTE DELUXE
    ========================================== */
-.roulette-container {
-    display: flex; flex-direction: column; align-items: center; gap: 30px;
+.roulette-wrapper {
+    display: flex; flex-direction: row; gap: 40px; align-items: center;
+    justify-content: center; padding: 20px; flex-wrap: wrap;
 }
 
-/* Der Roulettekessel */
-.wheel-box {
-    position: relative; width: 300px; height: 300px;
-    border-radius: 50%; border: 10px solid #222;
-    box-shadow: 0 0 50px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,0,0,0.5);
-    overflow: hidden; transition: transform 4s cubic-bezier(0.1, 0, 0.1, 1);
-}
-.wheel-img {
-    width: 100%; height: 100%;
-    background: conic-gradient(
-        #008000 0% 2.7%, #333 2.7% 5.4%, #e34234 5.4% 8.1%, #333 8.1% 10.8%, #e34234 10.8% 13.5%, 
-        #333 13.5% 16.2%, #e34234 16.2% 18.9%, #333 18.9% 21.6%, #e34234 21.6% 24.3%, #333 24.3% 27%, 
-        #e34234 27% 29.7%, #333 29.7% 32.4%, #e34234 32.4% 35.1%, #333 35.1% 37.8%, #e34234 37.8% 40.5%, 
-        #333 40.5% 43.2%, #e34234 43.2% 45.9%, #333 45.9% 48.6%, #e34234 48.6% 51.3%, #333 51.3% 54%, 
-        #e34234 54% 56.7%, #333 56.7% 59.4%, #e34234 59.4% 62.1%, #333 62.1% 64.8%, #e34234 64.8% 67.5%, 
-        #333 67.5% 70.2%, #e34234 70.2% 72.9%, #333 72.9% 75.6%, #e34234 75.6% 78.3%, #333 78.3% 81%, 
-        #e34234 81% 83.7%, #333 83.7% 86.4%, #e34234 86.4% 89.1%, #333 89.1% 91.8%, #e34234 91.8% 94.5%, 
-        #333 94.5% 97.2%, #e34234 97.2% 100%
-    );
-    display: flex; align-items: center; justify-content: center; position: relative;
-}
-.wheel-pointer {
-    position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
-    width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent;
-    border-top: 30px solid var(--prm); z-index: 100;
+/* Der Kessel-Bereich */
+.wheel-area { position: relative; width: 450px; height: 450px; }
+#roulette-canvas { 
+    width: 450px; height: 450px; 
+    filter: drop-shadow(0 0 30px rgba(0,0,0,0.8));
 }
 
-/* Der Setzteppich */
-.betting-table {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 600px;
+.wheel-pin {
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 4px; height: 40px; background: var(--prm); z-index: 100;
+    box-shadow: 0 0 15px var(--prm); border-radius: 2px;
 }
-.bet-btn {
-    background: rgba(255,255,255,0.05); border: 1px solid var(--brd); color: #fff;
-    padding: 20px; text-align: center; border-radius: 8px; cursor: pointer; transition: 0.2s;
+
+/* Das digitale Setzfeld */
+.betting-layout {
+    display: grid; grid-template-columns: 60px repeat(12, 1fr);
+    grid-template-rows: repeat(3, 60px) 50px 50px;
+    gap: 4px; background: rgba(0,0,0,0.3); padding: 10px;
+    border: 2px solid #222; border-radius: 8px; font-family: 'Inter', sans-serif;
 }
-.bet-btn:hover { background: rgba(212,175,55,0.2); border-color: var(--prm); }
-.bet-btn.selected { background: var(--prm); color: #000; font-weight: bold; }
-.bet-red { border-bottom: 4px solid var(--err); }
-.bet-black { border-bottom: 4px solid #333; }
+
+.table-cell {
+    background: #0a2e1a; border: 1px solid rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; cursor: pointer; position: relative;
+    transition: 0.2s; min-width: 45px;
+}
+
+.table-cell:hover { background: #145c34; border-color: var(--prm); }
+.cell-red { background: #800; }
+.cell-black { background: #111; }
+.cell-zero { grid-row: 1 / span 3; background: #006400; font-size: 20px; }
+
+/* Chip-Anzeige auf dem Feld */
+.chip-overlay {
+    position: absolute; width: 28px; height: 28px; background: var(--prm);
+    color: #000; border-radius: 50%; border: 3px dashed #fff;
+    font-size: 10px; display: flex; align-items: center; justify-content: center;
+    pointer-events: none; font-weight: 900; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+/* Chip-Selector unter dem Tisch */
+.chip-rack {
+    display: flex; gap: 15px; margin-top: 20px; justify-content: center;
+}
+.chip {
+    width: 50px; height: 50px; border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; border: 4px dashed rgba(255,255,255,0.3);
+    transition: 0.3s; transform: translateY(0);
+}
+.chip:hover { transform: translateY(-10px); }
+.chip.selected { border-color: #fff; transform: translateY(-10px); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+
+.c-5 { background: #666; } .c-10 { background: #005; } .c-50 { background: #800; } 
+.c-100 { background: #b8860b; } .c-500 { background: #4b0082; }
