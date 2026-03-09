@@ -3,6 +3,7 @@
    ========================================== */
 
 // Import um resetSystem erweitert
+import { Roulette } from './games/casino/roulette.js';
 import { loadState, getMoney, addMoney, resetSystem } from './core/state.js';
 import { updateHUD, initNavigation, showToast, setActiveNav } from './core/ui.js';
 import { Slots } from './games/casino/slots.js';
@@ -23,6 +24,10 @@ async function handleRoute(route) {
     setTimeout(() => {
         appRoot.innerHTML = '';
         switch(route) {
+              case 'roulette':
+    appRoot.innerHTML = Roulette.render();
+    Roulette.init();
+    break;
             case 'lobby': renderLobby(); break;
             case 'slots': appRoot.innerHTML = Slots.render(); Slots.init(); break;
             case 'book': appRoot.innerHTML = BookSlot.render(); BookSlot.init(); break;
@@ -83,3 +88,4 @@ function renderPlaceholder(name) {
 window.addEventListener('updateHUD', () => updateHUD(getMoney()));
 document.addEventListener('DOMContentLoaded', initApp);
 window.noirRoute = handleRoute;
+
