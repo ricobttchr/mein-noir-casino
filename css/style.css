@@ -233,3 +233,50 @@ label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing:
 
 /* --- GEMEINSAME UNTERE KLASSEN (Leiter, Info) --- */
 /* (Diese müssen nur 1x in der style.css stehen, sie gelten für beide Slots) */
+
+/* ==========================================
+   SPIEL-MODULE: NOIR ROULETTE
+   ========================================== */
+.roulette-container {
+    display: flex; flex-direction: column; align-items: center; gap: 30px;
+}
+
+/* Der Roulettekessel */
+.wheel-box {
+    position: relative; width: 300px; height: 300px;
+    border-radius: 50%; border: 10px solid #222;
+    box-shadow: 0 0 50px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,0,0,0.5);
+    overflow: hidden; transition: transform 4s cubic-bezier(0.1, 0, 0.1, 1);
+}
+.wheel-img {
+    width: 100%; height: 100%;
+    background: conic-gradient(
+        #008000 0% 2.7%, #333 2.7% 5.4%, #e34234 5.4% 8.1%, #333 8.1% 10.8%, #e34234 10.8% 13.5%, 
+        #333 13.5% 16.2%, #e34234 16.2% 18.9%, #333 18.9% 21.6%, #e34234 21.6% 24.3%, #333 24.3% 27%, 
+        #e34234 27% 29.7%, #333 29.7% 32.4%, #e34234 32.4% 35.1%, #333 35.1% 37.8%, #e34234 37.8% 40.5%, 
+        #333 40.5% 43.2%, #e34234 43.2% 45.9%, #333 45.9% 48.6%, #e34234 48.6% 51.3%, #333 51.3% 54%, 
+        #e34234 54% 56.7%, #333 56.7% 59.4%, #e34234 59.4% 62.1%, #333 62.1% 64.8%, #e34234 64.8% 67.5%, 
+        #333 67.5% 70.2%, #e34234 70.2% 72.9%, #333 72.9% 75.6%, #e34234 75.6% 78.3%, #333 78.3% 81%, 
+        #e34234 81% 83.7%, #333 83.7% 86.4%, #e34234 86.4% 89.1%, #333 89.1% 91.8%, #e34234 91.8% 94.5%, 
+        #333 94.5% 97.2%, #e34234 97.2% 100%
+    );
+    display: flex; align-items: center; justify-content: center; position: relative;
+}
+.wheel-pointer {
+    position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
+    width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent;
+    border-top: 30px solid var(--prm); z-index: 100;
+}
+
+/* Der Setzteppich */
+.betting-table {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 600px;
+}
+.bet-btn {
+    background: rgba(255,255,255,0.05); border: 1px solid var(--brd); color: #fff;
+    padding: 20px; text-align: center; border-radius: 8px; cursor: pointer; transition: 0.2s;
+}
+.bet-btn:hover { background: rgba(212,175,55,0.2); border-color: var(--prm); }
+.bet-btn.selected { background: var(--prm); color: #000; font-weight: bold; }
+.bet-red { border-bottom: 4px solid var(--err); }
+.bet-black { border-bottom: 4px solid #333; }
