@@ -62,6 +62,7 @@ label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing:
 .b-sec { background: transparent; border: 1px solid var(--prm); color: var(--prm); } 
 .b-acc { background: #fff; color: #000; } 
 .b-drk { background: #1a1a1c; border: 1px solid #333; color: #aaa; }
+.b-err { background: var(--err); color: #fff; }
 
 /* --- FX & TOAST BENACHRICHTIGUNGEN --- */
 #fx-layer { position: fixed; inset: 0; pointer-events: none; z-index: 8000; width: 100%; height: 100%; }
@@ -73,8 +74,8 @@ label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing:
 
 /* --- SPIEL-SPEZIFISCHE HILFSKLASSEN --- */
 .mdl-ht { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9000; justify-content:center; align-items:center; backdrop-filter: blur(5px);}
-
 .mdl-cnt { background:var(--pnl); padding:40px; border-radius:16px; border:1px solid var(--prm); max-width:500px; color:#fff; box-shadow: 0 20px 50px rgba(0,0,0,0.9);}
+
 /* ==========================================
    SPIEL-MODULE: PRESTIGE SLOTS
    ========================================== */
@@ -86,7 +87,6 @@ label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing:
     border-radius: 12px; 
     display: flex; 
     gap: 8px; 
-    /* Padding entfernt, damit Overflow perfekt abschneidet! */
     position: relative; 
     overflow: hidden; 
     box-shadow: inset 0 0 50px rgba(0,0,0,0.9); 
@@ -99,7 +99,6 @@ label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing:
     display: flex; 
     flex-direction: column; 
     will-change: transform; 
-    /* Padding nach innen verlegt */
     padding-top: 5px;
 }
 
@@ -114,9 +113,7 @@ label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing:
     border-radius: 8px; 
 }
 
-/* --- NEUE ANIMATIONEN --- */
-
-/* Animiertes Scatter Symbol */
+/* --- ANIMATIONEN --- */
 .sym-scatter {
     animation: spinPulse 1.5s infinite linear;
     text-shadow: 0 0 20px var(--prm);
@@ -127,7 +124,6 @@ label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing:
     100% { transform: scale(1) rotate(0deg); }
 }
 
-/* Big Win Overlay */
 .big-win-overlay {
     position: absolute; inset: 0; background: rgba(0,0,0,0.85);
     display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -141,19 +137,17 @@ label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing:
     100% { transform: scale(1); opacity: 1; }
 }
 
-/* Risikoleiter UI */
-.gamble-box {
-    display: none; justify-content: space-between; gap: 15px; margin-top: 15px;
+/* --- BUCHSTABEN-SYMBOLE (Low Pays) --- */
+.sym-let { 
+    font-family: "Georgia", serif; 
+    font-weight: 900; 
+    font-size: 55px; 
+    text-shadow: 2px 2px 0 #000, 0 0 15px rgba(255,255,255,0.2); 
 }
-.gamble-ladder {
-    position: absolute; inset: 0; background: rgba(0,0,0,0.95); z-index: 50;
-    display: flex; flex-direction: column-reverse; align-items: center; justify-content: center; gap: 5px;
-}
-.gamble-step {
-    padding: 5px 20px; font-family: monospace; font-size: 18px; color: #555;
-    border: 1px solid #333; border-radius: 4px; transition: 0.2s;
-}
-.gamble-step.act { color: #000; background: var(--prm); box-shadow: 0 0 15px var(--prm); font-weight: bold; transform: scale(1.1); }
+.sym-A { color: #FF3333; } 
+.sym-K { color: #33FF33; } 
+.sym-Q { color: #FF9933; } 
+.sym-J { color: #3399FF; } 
 
 /* --- INFO MODAL (PAYTABLE) --- */
 .slot-modal {
@@ -171,36 +165,19 @@ label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing:
     display: none; flex-direction: column; align-items: center; justify-content: center;
 }
 .ladder-box {
-    display: flex; flex-direction: column-reverse; gap: 4px; background: #111;
-    padding: 10px; border: 2px solid var(--prm); border-radius: 8px; width: 200px;
+    display: flex; flex-direction: column-reverse; gap: 2px; background: #111;
+    padding: 5px; border: 2px solid var(--prm); border-radius: 8px; width: 180px;
 }
 .l-step {
-    text-align: center; padding: 6px; font-family: monospace; font-size: 18px; color: #555;
+    text-align: center; padding: 4px; font-family: monospace; font-size: 14px; color: #555;
     background: #000; border: 1px solid #333; font-weight: bold; transition: all 0.1s;
 }
 .l-step.act { color: #000; background: var(--prm); box-shadow: 0 0 15px var(--prm); transform: scale(1.05); }
-.l-step.flash { background: #fff; color: #000; } /* Für das Blinken */
-/* --- BUCHSTABEN-SYMBOLE (Low Pays) --- */
-.sym-let { 
-    font-family: "Georgia", serif; 
-    font-weight: 900; 
-    font-size: 55px; 
-    text-shadow: 2px 2px 0 #000, 0 0 15px rgba(255,255,255,0.2); 
-}
-.sym-A { color: #FF3333; } /* Rot */
-.sym-K { color: #33FF33; } /* Grün */
-.sym-Q { color: #FF9933; } /* Orange */
-.sym-J { color: #3399FF; } /* Blau */
+.l-step.flash { background: #fff; color: #000; }
 
-/* --- FIX FÜR GAMBLE BUTTONS --- */
 .gamble-btns { 
-    display: flex; 
-    gap: 15px; 
-    margin-top: 25px; 
-    width: 100%; 
-    max-width: 350px; 
+    display: flex; gap: 10px; margin-top: 15px; width: 100%; max-width: 250px; 
 }
 .gamble-btns .btn { 
-    padding: 15px 10px; 
-    font-size: 13px; 
+    padding: 10px 10px; font-size: 12px; 
 }
