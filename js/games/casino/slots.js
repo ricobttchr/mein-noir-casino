@@ -1,6 +1,7 @@
 import { getMoney, removeMoney, addMoney, updateStat } from '../../core/state.js';
 import { formatMoney, showToast } from '../../core/ui.js';
 
+// --- EINGEBAUTE SOUND ENGINE ---
 const Snd = {
     ctx: null,
     init() {
@@ -190,7 +191,6 @@ export const Slots = {
         
         this.currentBet = bet; 
         
-        // FIX: Geld abziehen und UI direkt aktualisieren
         if(this.freeSpins <= 0) {
             const totalCost = this.currentBet * lines;
             if(!removeMoney(totalCost)) {
@@ -198,14 +198,11 @@ export const Slots = {
                 this.isAuto = false; this.updateAutoUI();
                 return;
             }
-            // Das hier hat gefehlt: HUD sofort updaten!
             window.dispatchEvent(new CustomEvent('updateHUD'));
         }
 
         this.isSpinning = true;
         document.getElementById('sl-btn-spin').disabled = true;
-        
-        // FIX: Auto-Button bleibt klickbar, damit man ihn abbrechen kann!
         document.getElementById('sl-btn-auto').disabled = false;
         
         document.getElementById('sl-display').innerText = this.freeSpins > 0 ? `FREE SPIN (${this.freeSpins})` : "SPINNING...";
@@ -219,7 +216,6 @@ export const Slots = {
         for(let i=0; i<5; i++) {
             let html = '';
             
-            // FIX: Echte Symbole fliegen vorbei statt das Emoji
             for(let j=0; j<15; j++) {
                 const rs = this.getRandomSymbol();
                 html += `<div class="sl-sym" style="filter:blur(3px); opacity:0.8;">${['J','Q','K','A'].includes(rs) ? `<span class="sym-let sym-${rs}">${rs}</span>` : rs}</div>`;
@@ -337,6 +333,9 @@ export const Slots = {
         this.gambleActive = true;
         document.getElementById('sl-controls').style.display = 'none';
         
+        document.getElementById('btn-gmb-collect').disabled = false;
+        document.getElementById('btn-gmb-risk').disabled = false;
+        
         const targetValue = winAmount / this.currentBet;
         this.currentLadderIdx = this.config.ladderSteps.findIndex(s => s >= targetValue);
         if(this.currentLadderIdx === -1) this.currentLadderIdx = this.config.ladderSteps.length - 1;
@@ -382,6 +381,9 @@ export const Slots = {
         clearInterval(this.gambleInterval);
         document.querySelectorAll('.l-step').forEach(el => el.classList.remove('flash'));
 
+        document.getElementById('btn-gmb-collect').disabled = true;
+        document.getElementById('btn-gmb-risk').disabled = true;
+
         const won = Math.random() > 0.5;
         
         if(won) {
@@ -393,7 +395,11 @@ export const Slots = {
             if(this.currentLadderIdx === this.config.ladderSteps.length - 1) {
                 setTimeout(() => this.collectGamble(), 1000);
             } else {
-                setTimeout(() => this.startLadderBlink(), 300); 
+                setTimeout(() => {
+                    document.getElementById('btn-gmb-collect').disabled = false;
+                    document.getElementById('btn-gmb-risk').disabled = false;
+                    this.startLadderBlink();
+                }, 300); 
             }
         } else {
             Snd.ladderLose();
@@ -401,6 +407,7 @@ export const Slots = {
             this.renderLadder();
             document.getElementById('sl-display').innerText = `VERLOREN!`;
             document.getElementById('sl-display').style.color = 'var(--err)';
+            
             setTimeout(() => this.resetSpinState(), 1500);
         }
     },
@@ -421,6 +428,7 @@ export const Slots = {
         this.gambleActive = false;
         document.getElementById('gamble-ui').style.display = 'none';
         document.getElementById('sl-btn-spin').disabled = false;
+        document.getElementById('sl-btn-auto').disabled = false;
         document.getElementById('sl-controls').style.display = 'grid';
         
         if(this.freeSpins > 0 || this.isAuto) setTimeout(() => this.spin(), 1000);
