@@ -41,8 +41,7 @@ export const Slots = {
             '🃏': 5, '⭐': 3
         },
         spinDuration: 1800,
-        lines: [[1,1,1,1,1],[0,0,0,0,0],[2,2,2,2,2],[0,1,2,1,0],[2,1,0,1,2],[0,0,1,0,0],[2,2,1,2,2],[1,0,0,0,1],[1,2,2,2,1],[0,1,1,1,0]],
-        ladderSteps: [0, 2, 4, 8, 12, 20, 40, 80, 140] 
+        lines: [[1,1,1,1,1],[0,0,0,0,0],[2,2,2,2,2],[0,1,2,1,0],[2,1,0,1,2],[0,0,1,0,0],[2,2,1,2,2],[1,0,0,0,1],[1,2,2,2,1],[0,1,1,1,0]]
     },
     
     symbolPool: [],
@@ -55,6 +54,7 @@ export const Slots = {
     currentLadderIdx: 0,
     gambleInterval: null,
     flashState: false,
+    dynamicSteps: [], // Speichert die individuellen Leiter-Stufen
 
     render() {
         return `
@@ -140,7 +140,6 @@ export const Slots = {
         document.getElementById('sl-btn-spin').onclick = () => { this.isAuto = false; this.updateAutoUI(); this.spin(); };
         document.getElementById('sl-btn-auto').onclick = () => this.toggleAuto();
         
-        // --- NEU: Das Selector-Update für den Wechsel zum Buch ---
         document.getElementById('sl-selector').onchange = (e) => {
             if(e.target.value === 'book') window.noirRoute('book');
         };
@@ -335,6 +334,7 @@ export const Slots = {
         setTimeout(() => overlay.remove(), 2500);
     },
 
+    // --- DYNAMISCHE RISIKOLEITER ENGINE ---
     initGamble(winAmount) {
         this.gambleActive = true;
         document.getElementById('sl-controls').style.display = 'none';
@@ -342,10 +342,19 @@ export const Slots = {
         document.getElementById('btn-gmb-collect').disabled = false;
         document.getElementById('btn-gmb-risk').disabled = false;
         
-        const targetValue = winAmount / this.currentBet;
-        this.currentLadderIdx = this.config.ladderSteps.findIndex(s => s >= targetValue);
-        if(this.currentLadderIdx === -1) this.currentLadderIdx = this.config.ladderSteps.length - 1;
-        if(this.currentLadderIdx === 0) this.currentLadderIdx = 1; 
+        // Baut sich immer exakt aus deinem Gewinn auf
+        this.dynamicSteps = [
+            0,
+            winAmount,
+            winAmount * 2,
+            winAmount * 4,
+            winAmount * 8,
+            winAmount * 16,
+            winAmount * 32,
+            winAmount * 64
+        ];
+        
+        this.currentLadderIdx = 1; 
 
         this.renderLadder();
         document.getElementById('gamble-ui').style.display = 'flex';
@@ -356,8 +365,7 @@ export const Slots = {
         const container = document.getElementById('ladder-container');
         container.innerHTML = '';
         
-        this.config.ladderSteps.forEach((stepMult, idx) => {
-            const val = stepMult * this.currentBet;
+        this.dynamicSteps.forEach((val, idx) => {
             const div = document.createElement('div');
             div.className = `l-step ${idx === this.currentLadderIdx ? 'act' : ''}`;
             div.id = `l-step-${idx}`;
@@ -371,8 +379,8 @@ export const Slots = {
         this.gambleInterval = setInterval(() => {
             Snd.ladder(); 
             this.flashState = !this.flashState;
-            const upIdx = Math.min(this.currentLadderIdx + 1, this.config.ladderSteps.length - 1);
-            const downIdx = this.currentLadderIdx === 1 ? 0 : this.currentLadderIdx - 1;
+            const upIdx = Math.min(this.currentLadderIdx + 1, this.dynamicSteps.length - 1);
+            const downIdx = 0; 
             
             document.querySelectorAll('.l-step').forEach(el => el.classList.remove('flash'));
             if(this.flashState) {
@@ -394,12 +402,12 @@ export const Slots = {
         
         if(won) {
             Snd.ladderWin();
-            this.currentLadderIdx = Math.min(this.currentLadderIdx + 1, this.config.ladderSteps.length - 1);
+            this.currentLadderIdx = Math.min(this.currentLadderIdx + 1, this.dynamicSteps.length - 1);
             this.renderLadder();
             document.getElementById('sl-display').innerText = `GEKLETTERT!`;
             
-            if(this.currentLadderIdx === this.config.ladderSteps.length - 1) {
-                setTimeout(() => this.collectGamble(), 1000);
+            if(this.currentLadderIdx === this.dynamicSteps.length - 1) {
+                setTimeout(() => this.collectGamble(), 1000); 
             } else {
                 setTimeout(() => {
                     document.getElementById('btn-gmb-collect').disabled = false;
@@ -419,7 +427,7 @@ export const Slots = {
     },
 
     collectGamble() {
-        const val = this.config.ladderSteps[this.currentLadderIdx] * this.currentBet;
+        const val = this.dynamicSteps[this.currentLadderIdx]; 
         if(val > 0) {
             addMoney(val);
             window.dispatchEvent(new CustomEvent('updateHUD'));
