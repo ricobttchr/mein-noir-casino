@@ -65,6 +65,7 @@ export const Slots = {
                         <div>
                             <select id="sl-selector" style="padding: 5px; font-size: 14px; background: transparent; border: 1px solid var(--prm); color:var(--prm); margin-right: 10px;">
                                 <option value="classic">Classic Noir</option>
+                                <option value="book">Book of Noir</option>
                             </select>
                             <button id="sl-btn-info" class="btn b-sec" style="padding: 5px 10px; width:auto; border-radius:50%;">i</button>
                         </div>
@@ -138,6 +139,11 @@ export const Slots = {
 
         document.getElementById('sl-btn-spin').onclick = () => { this.isAuto = false; this.updateAutoUI(); this.spin(); };
         document.getElementById('sl-btn-auto').onclick = () => this.toggleAuto();
+        
+        // --- NEU: Das Selector-Update für den Wechsel zum Buch ---
+        document.getElementById('sl-selector').onchange = (e) => {
+            if(e.target.value === 'book') window.noirRoute('book');
+        };
         
         document.getElementById('sl-btn-info').onclick = () => document.getElementById('sl-info-modal').classList.add('act');
         document.getElementById('btn-close-info').onclick = () => document.getElementById('sl-info-modal').classList.remove('act');
