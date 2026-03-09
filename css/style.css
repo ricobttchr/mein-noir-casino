@@ -1,0 +1,76 @@
+/* ==========================================
+   NOIR ARENA - GLOBAL STYLES
+   ========================================== */
+:root { 
+    --bg: #050505; 
+    --pnl: rgba(18, 18, 20, 0.7); 
+    --prm: #D4AF37; /* Champagne Gold */
+    --sec: #E5E4E2; /* Platinum */
+    --acc: #FFFFFF; /* Pure White */
+    --suc: #50C878; /* Emerald Green */
+    --err: #E34234; /* Cinnabar Red */
+    --brd: rgba(212, 175, 55, 0.15);
+    --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --sb-width: 280px; 
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+body { background: var(--bg); color: #e2e8f0; font-family: var(--font-ui); height: 100vh; display: flex; overflow: hidden; letter-spacing: 0.5px; }
+
+/* --- SIDEBAR (Links) --- */
+aside { width: var(--sb-width); background: rgba(8, 8, 10, 0.95); border-right: 1px solid var(--brd); display: flex; flex-direction: column; z-index: 400; padding: 30px 0; box-shadow: 5px 0 30px rgba(0,0,0,0.8); }
+.logo-area { padding: 0 30px 30px 30px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px;}
+.logo { font-size: 32px; font-weight: 300; letter-spacing: 6px; color: var(--acc); text-transform: uppercase; }
+.logo span { font-weight: 900; color: var(--prm); }
+.subtitle { font-size: 10px; color: var(--prm); letter-spacing: 4px; text-transform: uppercase; margin-top: 5px; opacity: 0.8;}
+
+.nav-grp { margin-bottom: 25px; }
+.nav-hdr { padding: 0 30px 10px 30px; font-size: 11px; color: #666; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; }
+.nav-it { padding: 12px 30px; color: #aaa; font-size: 14px; font-weight: 400; cursor: pointer; border-left: 3px solid transparent; transition: all 0.2s ease; letter-spacing: 1px; }
+.nav-it:hover { background: rgba(255,255,255,0.03); color: #fff; }
+.nav-it.act { background: linear-gradient(90deg, rgba(212,175,55,0.1), transparent); color: var(--prm); border-left-color: var(--prm); font-weight: 600; }
+
+/* --- MAIN LAYOUT (Rechts) --- */
+.main-wrapper { flex: 1; display: flex; flex-direction: column; position: relative; }
+
+header { height: 80px; background: rgba(5, 5, 5, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: flex-end; align-items: center; padding: 0 40px; z-index: 500; }
+.hud { display: flex; gap: 40px; align-items: center; }
+.hud-bx { text-align: right; }
+.hud-val { font-size: 22px; font-weight: 300; color: var(--prm); letter-spacing: 1px; transition: color 0.3s ease; }
+.hud-pas { font-size: 12px; color: var(--sec); font-weight: 400; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; }
+
+main#app-root { flex: 1; overflow-y: auto; padding: 40px; position: relative;}
+
+/* --- WIEDERVERWENDBARE BAUTEILE (Panels, Grid, Buttons) --- */
+.screen { display: flex; flex-direction: column; gap: 30px; animation: fIn 0.4s ease-out; max-width: 1400px; margin: 0 auto; width: 100%; }
+@keyframes fIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+.pnl { background: var(--pnl); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 35px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); backdrop-filter: blur(20px); }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; }
+.ttl { font-size: 16px; color: var(--sec); font-weight: 600; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between; align-items:center;}
+
+input, select { background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); color: var(--prm); padding: 15px 20px; border-radius: 8px; font-family: monospace; font-size: 16px; width: 100%; outline: none; transition: 0.3s; }
+input:focus { border-color: var(--prm); background: rgba(212,175,55,0.05); }
+label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: block; }
+
+.btn { padding: 18px 25px; border-radius: 8px; font-weight: 600; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; border: none; font-size: 13px; width: 100%; transition: all 0.2s ease; text-align: center; }
+.btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
+.btn:active:not(:disabled) { transform: translateY(0); }
+.btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.b-prm { background: linear-gradient(135deg, #CFB53B, #8A7322); color: #000; box-shadow: 0 5px 15px rgba(212,175,55,0.2); } 
+.b-sec { background: transparent; border: 1px solid var(--prm); color: var(--prm); } 
+.b-acc { background: #fff; color: #000; } 
+.b-drk { background: #1a1a1c; border: 1px solid #333; color: #aaa; }
+
+/* --- FX & TOAST BENACHRICHTIGUNGEN --- */
+#fx-layer { position: fixed; inset: 0; pointer-events: none; z-index: 8000; width: 100%; height: 100%; }
+#toast-box { position: fixed; bottom: 40px; right: 40px; z-index: 9999; display: flex; flex-direction: column; gap: 15px; pointer-events: none; align-items: flex-end; }
+.tst { background: rgba(20,20,25,0.95); color: var(--prm); border: 1px solid var(--brd); padding: 18px 30px; border-radius: 8px; font-weight: 400; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); animation: sUp 0.4s ease forwards; backdrop-filter: blur(10px); border-left: 4px solid var(--prm); }
+@keyframes sUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+.val-gld { font-size: 28px; color: var(--prm); font-weight: 300; letter-spacing: 1px; }
+
+/* --- SPIEL-SPEZIFISCHE HILFSKLASSEN --- */
+.mdl-ht { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9000; justify-content:center; align-items:center; backdrop-filter: blur(5px);}
+.mdl-cnt { background:var(--pnl); padding:40px; border-radius:16px; border:1px solid var(--prm); max-width:500px; color:#fff; box-shadow: 0 20px 50px rgba(0,0,0,0.9);}

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOIR | The Gaming Arena</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <canvas id="fx-layer"></canvas>
+
+    <aside id="sidebar">
+        <div class="logo-area">
+            <div class="logo">N<span>O</span>IR</div>
+            <div class="subtitle">Private Arena</div>
+        </div>
+        
+        <div class="nav-grp">
+            <div class="nav-hdr">High-Roller Casino</div>
+            <div class="nav-it act" data-route="lobby">Lounge</div>
+            <div class="nav-it" data-route="slots">Prestige Slots</div>
+            <div class="nav-it" data-route="roulette">Roulette</div>
+            <div class="nav-it" data-route="blackjack">Blackjack</div>
+        </div>
+        
+        <div class="nav-grp">
+            <div class="nav-hdr">Arcade & Classics</div>
+            <div class="nav-it" data-route="snake">Neon Snake</div>
+            <div class="nav-it" data-route="reflex">Reflex Grid</div>
+            <div class="nav-it" data-route="racing">Outrun Racing</div>
+        </div>
+        
+        <div class="nav-grp">
+            <div class="nav-hdr">Verwaltung</div>
+            <div class="nav-it" data-route="bank">Syndicate Bank</div>
+            <div class="nav-it" data-route="stats">Analytics</div>
+        </div>
+    </aside>
+
+    <div class="main-wrapper">
+        <header>
+            <div class="hud">
+                <div class="hud-bx">
+                    <div class="hud-val" id="hud-money">Loading...</div>
+                    <div class="hud-pas">Liquid Funds</div>
+                </div>
+            </div>
+        </header>
+
+        <main id="app-root">
+            </main>
+    </div>
+
+    <div id="toast-box"></div>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
