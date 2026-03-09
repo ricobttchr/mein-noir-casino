@@ -3,33 +3,72 @@ import { formatMoney, showToast } from '../../core/ui.js';
 
 export const Slots = {
     config: {
-        // Balancing: Viel mehr Nieten/Kirschen, seltene Topsymbole. ⭐ ist Scatter.
-        symbols: ['🍒','🍒','🍒','🍒','🍋','🍋','🍋','🔔','🔔','💎','7️⃣','⭐'],
+        // Low Pays: J, Q, K, A | High Pays: 🍒, 🍋, 🔔, 💎, 7️⃣ | Special: 🃏 (Wild), ⭐ (Scatter)
+        // Das ist unser Mathematik-Modell (Hit Frequency & RTP Steuerung)
+        symbolWeights: {
+            'J': 45, 'Q': 40, 'K': 35, 'A': 30, // Häufige Nieten / Kleingewinne
+            '🍒': 25, '🍋': 20, '🔔': 15,       // Mittlere Gewinne
+            '💎': 8, '7️⃣': 4,                  // Hohe Gewinne (Selten)
+            '🃏': 5,                           // Wild (Joker)
+            '⭐': 3                            // Scatter (Freispiele)
+        },
         spinDuration: 1800,
-        lines: [[1,1,1,1,1],[0,0,0,0,0],[2,2,2,2,2],[0,1,2,1,0],[2,1,0,1,2],[0,0,1,0,0],[2,2,1,2,2],[1,0,0,0,1],[1,2,2,2,1],[0,1,1,1,0]] // 10 Linien Standard
+        lines: [[1,1,1,1,1],[0,0,0,0,0],[2,2,2,2,2],[0,1,2,1,0],[2,1,0,1,2],[0,0,1,0,0],[2,2,1,2,2],[1,0,0,0,1],[1,2,2,2,1],[0,1,1,1,0]],
+        
+        // Risikoleiter Stufen (Multiplikatoren des Grundeinsatzes)
+        ladderSteps: [0, 2, 4, 8, 12, 20, 40, 80, 140] 
     },
+    
+    symbolPool: [], // Wird beim Start gefüllt
     isSpinning: false,
     freeSpins: 0,
-    pendingWin: 0, // Für die Risikoleiter
     currentBet: 0,
+    
+    // Gamble States
+    gambleActive: false,
+    currentLadderIdx: 0,
+    gambleInterval: null,
+    flashState: false,
 
     render() {
         return `
             <div class="screen act">
                 <div class="pnl" style="max-width: 1000px; margin: 0 auto; width: 100%;">
                     
-                    <div class="ttl" style="margin-bottom: 15px;">
-                        <select id="sl-selector" style="width: auto; padding: 5px 10px; font-size: 14px; background: transparent; border: 1px solid var(--prm);">
-                            <option value="classic">Classic Noir</option>
-                            <option value="book">Book of Noir (Locked)</option>
-                        </select>
+                    <div class="ttl" style="margin-bottom: 15px; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <select id="sl-selector" style="padding: 5px; font-size: 14px; background: transparent; border: 1px solid var(--prm); color:var(--prm); margin-right: 10px;">
+                                <option value="classic">Classic Noir</option>
+                            </select>
+                            <button id="sl-btn-info" class="btn b-sec" style="padding: 5px 10px; width:auto; border-radius:50%;">i</button>
+                        </div>
                         <span id="sl-fs-counter" style="color:var(--prm); display:none;">FREISPIELE: 0</span>
                     </div>
                     
                     <div class="slot-box" id="sl-main-box">
                         <canvas id="sl-canvas"></canvas>
                         
-                        <div class="gamble-ladder" id="gamble-ladder" style="display:none;"></div>
+                        <div class="slot-modal" id="sl-info-modal">
+                            <h3 style="color:var(--prm); margin-bottom:15px; border-bottom:1px solid var(--prm); padding-bottom:10px;">PAYTABLE & INFO</h3>
+                            <div class="pt-row"><span class="pt-sym">⭐</span><span>Scatter: 3+ lösen 10 Freispiele aus.</span></div>
+                            <div class="pt-row"><span class="pt-sym">🃏</span><span>Wild: Ersetzt alle Symbole außer Scatter.</span></div>
+                            <div class="pt-row"><span class="pt-sym">7️⃣</span><span>3x: 50 | 4x: 250 | 5x: 1000</span></div>
+                            <div class="pt-row"><span class="pt-sym">💎</span><span>3x: 20 | 4x: 100 | 5x: 400</span></div>
+                            <div class="pt-row"><span class="pt-sym">🔔</span><span>3x: 10 | 4x: 25 | 5x: 100</span></div>
+                            <div class="pt-row"><span class="pt-sym">🍒🍋</span><span>3x: 5 | 4x: 15 | 5x: 50</span></div>
+                            <div class="pt-row"><span class="pt-sym">JQKA</span><span>3x: 2 | 4x: 5 | 5x: 20</span></div>
+                            <button class="btn b-prm" id="btn-close-info" style="margin-top:20px;">SCHLIESSEN</button>
+                        </div>
+
+                        <div class="gamble-ladder-ui" id="gamble-ui">
+                            <h3 style="color:var(--prm); margin-bottom: 20px; letter-spacing:3px;">RISIKOLEITER</h3>
+                            <div class="ladder-box" id="ladder-container">
+                                </div>
+                            <div style="display:flex; gap:10px; margin-top:20px; width: 300px;">
+                                <button class="btn b-acc" id="btn-gmb-collect" style="flex:1;">NEHMEN</button>
+                                <button class="btn b-err" id="btn-gmb-risk" style="flex:1; background:#800000; color:#fff;">DRÜCKEN</button>
+                            </div>
+                        </div>
 
                         <div class="sl-rl" id="sl-r0"></div>
                         <div class="sl-rl" id="sl-r1"></div>
@@ -41,14 +80,9 @@ export const Slots = {
                     <div id="sl-display" style="text-align:center; font-size:24px; color:var(--sec); margin:25px 0; letter-spacing:2px; height:30px;">BEREIT</div>
 
                     <div class="grid" id="sl-controls" style="grid-template-columns: 1fr 1fr 2fr; align-items: end;">
-                        <div><label>Einsatz / Linie</label><input type="number" id="sl-bet" value="10" min="1"></div>
-                        <div><label>Linien</label><input type="number" id="sl-lines" value="10" min="1" max="10" readonly></div>
+                        <div><label>Einsatz (0.10 - 100)</label><input type="number" id="sl-bet" value="1" min="0.10" max="100" step="0.10"></div>
+                        <div><label>Linien</label><input type="number" id="sl-lines" value="10" readonly></div>
                         <div><button class="btn b-prm" id="sl-btn-spin">SPIN</button></div>
-                    </div>
-
-                    <div class="gamble-box" id="gamble-controls">
-                        <button class="btn b-sec" id="btn-gamble-collect">GEWINN NEHMEN</button>
-                        <button class="btn b-err" id="btn-gamble-risk" style="background:#800000; color:#fff; border:none;">RISIKO 50/50</button>
                     </div>
                 </div>
             </div>
@@ -60,19 +94,21 @@ export const Slots = {
         this.ctx = this.canvas.getContext('2d');
         this.reels = [0,1,2,3,4].map(i => document.getElementById(`sl-r${i}`));
         
+        // Symbol-Pool anhand der Gewichte generieren (für den Pseudo-RNG)
+        for (const [sym, weight] of Object.entries(this.config.symbolWeights)) {
+            for (let i = 0; i < weight; i++) this.symbolPool.push(sym);
+        }
+
         this.resizeCanvas();
         window.addEventListener('resize', () => this.resizeCanvas());
 
         document.getElementById('sl-btn-spin').onclick = () => this.spin();
-        document.getElementById('btn-gamble-collect').onclick = () => this.collectWin();
-        document.getElementById('btn-gamble-risk').onclick = () => this.playGamble();
-
-        document.getElementById('sl-selector').onchange = (e) => {
-            if(e.target.value !== 'classic') {
-                showToast("Dieses Modul wird gerade installiert.", "info");
-                e.target.value = 'classic';
-            }
-        };
+        document.getElementById('sl-btn-info').onclick = () => document.getElementById('sl-info-modal').classList.add('act');
+        document.getElementById('btn-close-info').onclick = () => document.getElementById('sl-info-modal').classList.remove('act');
+        
+        // Gamble Buttons
+        document.getElementById('btn-gmb-collect').onclick = () => this.collectGamble();
+        document.getElementById('btn-gmb-risk').onclick = () => this.stepLadder();
 
         this.reels.forEach(r => r.innerHTML = '<div class="sl-sym">🎰</div>'.repeat(3));
     },
@@ -85,13 +121,16 @@ export const Slots = {
         this.ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
     },
 
+    getRandomSymbol() {
+        return this.symbolPool[Math.floor(Math.random() * this.symbolPool.length)];
+    },
+
     async spin() {
-        if(this.isSpinning || this.pendingWin > 0) return;
+        if(this.isSpinning || this.gambleActive) return;
 
-        const bet = parseInt(document.getElementById('sl-bet').value);
-        const lines = parseInt(document.getElementById('sl-lines').value);
-        this.currentBet = bet * lines;
-
+        const bet = parseFloat(document.getElementById('sl-bet').value);
+        this.currentBet = bet; // Einsatz pro Spin
+        
         if(this.freeSpins <= 0 && !removeMoney(this.currentBet)) {
             showToast("Nicht genügend Guthaben!", "error");
             return;
@@ -109,12 +148,13 @@ export const Slots = {
 
         for(let i=0; i<5; i++) {
             let html = '';
-            for(let j=0; j<15; j++) html += `<div class="sl-sym" style="filter:blur(3px)">🎰</div>`;
+            // Blur-Symbole beim Drehen
+            for(let j=0; j<15; j++) html += `<div class="sl-sym" style="filter:blur(3px)">${this.getRandomSymbol()}</div>`;
             
+            // Echte Ergebnisse
             for(let k=0; k<3; k++) {
-                const s = this.config.symbols[Math.floor(Math.random()*this.config.symbols.length)];
+                const s = this.getRandomSymbol();
                 grid[i].push(s);
-                // Wenn Scatter, dann CSS Animation hinzufügen
                 const extraClass = s === '⭐' ? 'sym-scatter' : '';
                 html += `<div class="sl-sym ${extraClass}">${s}</div>`;
             }
@@ -129,11 +169,11 @@ export const Slots = {
             }, 20);
         }
 
-        setTimeout(() => this.evaluate(grid, bet, lines), this.config.spinDuration + 1200);
+        setTimeout(() => this.evaluate(grid), this.config.spinDuration + 1200);
     },
 
-    evaluate(grid, bet, lines) {
-        let win = 0;
+    evaluate(grid) {
+        let totalWin = 0;
         let scatters = 0;
         const w = this.canvas.clientWidth / 5;
         const h = this.canvas.clientHeight / 3;
@@ -146,45 +186,60 @@ export const Slots = {
             this.showBigWinOverlay("10 FREISPIELE!");
         }
 
-        for(let i=0; i < lines; i++) {
+        // Linien Auswertung mit Wild (🃏) Logik
+        for(let i=0; i < 10; i++) {
             const p = this.config.lines[i];
-            let s = grid[0][p[0]], match = 1;
             
-            // Scatter zahlen nicht auf Linien
-            if(s === '⭐') continue;
+            // Finde das erste Symbol, das kein Joker ist, um die Linie zu definieren
+            let targetSym = grid[0][p[0]];
+            let match = 1;
 
-            for(let c=1; c<5; c++) { if(grid[c][p[c]] === s) match++; else break; }
+            // Scatters zahlen nicht auf Linien
+            if(targetSym === '⭐') continue;
+
+            for(let c=1; c<5; c++) {
+                const currentSym = grid[c][p[c]];
+                // Wenn wir noch kein klares Zielsymbol haben (weil erstes ein Joker war), definieren wir es jetzt
+                if(targetSym === '🃏' && currentSym !== '🃏' && currentSym !== '⭐') targetSym = currentSym;
+                
+                if(currentSym === targetSym || currentSym === '🃏') {
+                    match++;
+                } else {
+                    break;
+                }
+            }
 
             if(match >= 3) {
-                // Hardcore Balancing
                 let mult = 0;
-                if(s === '🍒') mult = match === 3 ? 1 : match === 4 ? 3 : 10;
-                if(s === '🍋') mult = match === 3 ? 2 : match === 4 ? 5 : 20;
-                if(s === '🔔') mult = match === 3 ? 5 : match === 4 ? 15 : 50;
-                if(s === '💎') mult = match === 3 ? 15 : match === 4 ? 50 : 250;
-                if(s === '7️⃣') mult = match === 3 ? 30 : match === 4 ? 150 : 1000;
+                // Paytable Multiplikatoren
+                if(['J','Q','K','A'].includes(targetSym)) mult = match === 3 ? 2 : match === 4 ? 5 : 20;
+                if(['🍒','🍋'].includes(targetSym)) mult = match === 3 ? 5 : match === 4 ? 15 : 50;
+                if(targetSym === '🔔') mult = match === 3 ? 10 : match === 4 ? 25 : 100;
+                if(targetSym === '💎') mult = match === 3 ? 20 : match === 4 ? 100 : 400;
+                if(targetSym === '7️⃣') mult = match === 3 ? 50 : match === 4 ? 250 : 1000;
+                // Reine Joker-Linie
+                if(targetSym === '🃏') mult = match === 3 ? 50 : match === 4 ? 250 : 1000;
                 
                 if(mult > 0) {
-                    win += bet * mult;
+                    totalWin += this.currentBet * mult;
                     this.drawWinLine(p, match, w, h);
                 }
             }
         }
 
-        if(win > 0) {
-            this.pendingWin = win;
-            document.getElementById('sl-display').innerText = `GEWINN: ${formatMoney(win)}`;
+        if(totalWin > 0) {
+            document.getElementById('sl-display').innerText = `GEWINN: ${formatMoney(totalWin)}`;
             document.getElementById('sl-display').style.color = 'var(--suc)';
             
-            // Big Win Check (Mehr als 20x Gesamteinsatz)
-            if(win >= this.currentBet * 20) this.showBigWinOverlay("BIG WIN!");
+            if(totalWin >= this.currentBet * 50) this.showBigWinOverlay("BIG WIN!");
 
-            // Wenn Freispiele laufen, wird automatisch gesammelt. Wenn nicht -> Risiko-Modus
+            // Automatisches Sammeln im Freispiel, sonst Leiter
             if(this.freeSpins > 0) {
-                setTimeout(() => this.collectWin(), 1500);
+                addMoney(totalWin);
+                window.dispatchEvent(new CustomEvent('updateHUD'));
+                setTimeout(() => this.resetSpinState(), 1500);
             } else {
-                document.getElementById('sl-controls').style.display = 'none';
-                document.getElementById('gamble-controls').style.display = 'flex';
+                this.initGamble(totalWin);
             }
         } else {
             document.getElementById('sl-display').innerText = "KEIN GEWINN";
@@ -214,36 +269,98 @@ export const Slots = {
         setTimeout(() => overlay.remove(), 2500);
     },
 
-    // --- RISIKOLEITER LOGIK ---
-    playGamble() {
-        // Simples 50/50 Risiko (Verdoppeln oder Nichts)
-        if(Math.random() > 0.5) {
-            this.pendingWin *= 2;
-            document.getElementById('sl-display').innerText = `VERDOPPELT: ${formatMoney(this.pendingWin)}`;
-            showToast("GEWONNEN!", "info");
+    // --- RISIKOLEITER ENGINE ---
+    initGamble(winAmount) {
+        this.gambleActive = true;
+        document.getElementById('sl-controls').style.display = 'none';
+        
+        // Startstufe auf der Leiter finden (erste Stufe, die höher als der Gewinn ist)
+        const targetValue = winAmount / this.currentBet;
+        this.currentLadderIdx = this.config.ladderSteps.findIndex(s => s >= targetValue);
+        if(this.currentLadderIdx === -1) this.currentLadderIdx = this.config.ladderSteps.length - 1; // Max Win
+        if(this.currentLadderIdx === 0) this.currentLadderIdx = 1; // Mindestens Stufe 1
+
+        this.renderLadder();
+        document.getElementById('gamble-ui').style.display = 'flex';
+        this.startLadderBlink();
+    },
+
+    renderLadder() {
+        const container = document.getElementById('ladder-container');
+        container.innerHTML = '';
+        
+        this.config.ladderSteps.forEach((stepMult, idx) => {
+            const val = stepMult * this.currentBet;
+            const div = document.createElement('div');
+            div.className = `l-step ${idx === this.currentLadderIdx ? 'act' : ''}`;
+            div.id = `l-step-${idx}`;
+            div.innerText = formatMoney(val);
+            container.appendChild(div);
+        });
+    },
+
+    startLadderBlink() {
+        clearInterval(this.gambleInterval);
+        this.gambleInterval = setInterval(() => {
+            this.flashState = !this.flashState;
+            const upIdx = Math.min(this.currentLadderIdx + 1, this.config.ladderSteps.length - 1);
+            const downIdx = this.currentLadderIdx === 1 ? 0 : this.currentLadderIdx - 1; // Fällt bei 1 auf 0
+            
+            document.querySelectorAll('.l-step').forEach(el => el.classList.remove('flash'));
+            if(this.flashState) {
+                document.getElementById(`l-step-${upIdx}`).classList.add('flash');
+            } else {
+                document.getElementById(`l-step-${downIdx}`).classList.add('flash');
+            }
+        }, 150); // Schnelles Automaten-Blinken
+    },
+
+    stepLadder() {
+        clearInterval(this.gambleInterval);
+        document.querySelectorAll('.l-step').forEach(el => el.classList.remove('flash'));
+
+        // 50/50 Chance (bei echten Automaten oft leicht zugunsten der Bank gewichtet, hier fair)
+        const won = Math.random() > 0.5;
+        
+        if(won) {
+            this.currentLadderIdx = Math.min(this.currentLadderIdx + 1, this.config.ladderSteps.length - 1);
+            this.renderLadder();
+            document.getElementById('sl-display').innerText = `GEKLETTERT!`;
+            
+            if(this.currentLadderIdx === this.config.ladderSteps.length - 1) {
+                // Top erreicht!
+                setTimeout(() => this.collectGamble(), 1000);
+            } else {
+                this.startLadderBlink();
+            }
         } else {
-            this.pendingWin = 0;
+            // Eine Stufe runter oder auf 0 (typische Novoline-Logik: meistens fällt es auf 0)
+            // Wir machen es Hardcore: Es fällt auf 0.
+            this.currentLadderIdx = 0;
+            this.renderLadder();
             document.getElementById('sl-display').innerText = `VERLOREN!`;
             document.getElementById('sl-display').style.color = 'var(--err)';
             setTimeout(() => this.resetSpinState(), 1500);
-            return;
         }
     },
 
-    collectWin() {
-        if(this.pendingWin > 0) {
-            addMoney(this.pendingWin);
+    collectGamble() {
+        const val = this.config.ladderSteps[this.currentLadderIdx] * this.currentBet;
+        if(val > 0) {
+            addMoney(val);
             window.dispatchEvent(new CustomEvent('updateHUD'));
-            this.pendingWin = 0;
+            showToast(`Ausgezahlt: ${formatMoney(val)}`, 'info');
         }
         this.resetSpinState();
     },
 
     resetSpinState() {
+        clearInterval(this.gambleInterval);
         this.isSpinning = false;
+        this.gambleActive = false;
+        document.getElementById('gamble-ui').style.display = 'none';
         document.getElementById('sl-btn-spin').disabled = false;
         document.getElementById('sl-controls').style.display = 'grid';
-        document.getElementById('gamble-controls').style.display = 'none';
         
         if(this.freeSpins > 0) setTimeout(() => this.spin(), 1000);
     },
