@@ -1,5 +1,5 @@
 /* ==========================================
-   NOIR ARENA - ANTI-DISPLACEMENT FIX
+   NOIR ARENA - ABSOLUTE FIXED LAYOUT
    ========================================== */
 :root { 
     --bg: #050505; 
@@ -7,43 +7,38 @@
     --sb-width: 280px; 
 }
 
-/* Hard Reset */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body { 
-    background: var(--bg); 
-    height: 100%; 
-    width: 100%;
-    overflow: hidden; /* Verhindert Scrollen des gesamten Bodys */
+    background: var(--bg) !important; 
+    height: 100vh; 
+    width: 100vw;
+    overflow: hidden;
 }
 
-body { 
-    display: flex; 
-    position: fixed; /* Fixiert den Body auf dem Viewport */
-    inset: 0;
-}
-
-/* --- SIDEBAR LINKS --- */
+/* SIDEBAR: Bombenfest links */
 aside { 
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
     width: var(--sb-width); 
-    min-width: var(--sb-width);
-    background: #000; 
+    background: #08080a; 
     border-right: 1px solid rgba(212, 175, 55, 0.3); 
-    height: 100%;
+    z-index: 1000;
     display: flex;
     flex-direction: column;
-    z-index: 100;
 }
 
-/* --- HAUPTFENSTER RECHTS --- */
+/* MAIN WRAPPER: Füllt den Rest rechts exakt aus */
 .main-wrapper { 
-    flex: 1; /* Nimmt den RESTLICHEN Platz ein */
-    display: flex; 
-    flex-direction: column; 
-    height: 100%;
+    position: absolute;
+    top: 0;
+    left: var(--sb-width); /* Startet exakt nach der Sidebar */
+    right: 0;
+    bottom: 0;
     background: var(--bg);
-    overflow: hidden; /* WICHTIG: Kein Ausbrechen nach rechts erlaubt */
-    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 header { 
@@ -56,28 +51,35 @@ header {
     padding: 0 40px; 
 }
 
-/* DER ENTSCHEIDENDE FIX FÜR APP-ROOT */
+/* APP-ROOT: Der Bereich für die Spiele */
 main#app-root { 
-    flex: 1; 
-    width: 100%; /* Begrenzt auf die Breite des main-wrappers */
+    position: relative;
+    width: 100%;
+    height: calc(100vh - 80px); /* Gesamte Höhe minus Header */
     padding: 40px; 
-    overflow-y: auto; /* Erlaubt vertikales Scrollen im Spielbereich */
-    overflow-x: hidden; /* Verbietet horizontales Scrollen */
+    overflow-y: auto; 
+    overflow-x: hidden;
     display: block !important; 
     opacity: 1 !important;
+    visibility: visible !important;
 }
 
-/* --- LOBBY CARDS --- */
-.screen { width: 100%; max-width: 1100px; margin: 0 auto; }
+/* --- LOBBY CARDS & PANELS --- */
+.screen { width: 100%; max-width: 1100px; margin: 0 auto; opacity: 1 !important; }
 .pnl { background: #121214; border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 12px; padding: 30px; margin-bottom: 20px; }
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
 
-/* Buttons & Rest */
-.btn { padding: 15px 25px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; text-transform: uppercase; text-align: center; }
+/* Typo & Buttons */
+.logo-area { padding: 30px; text-align: center; border-bottom: 1px solid #111; }
+.logo { font-size: 24px; font-weight: 900; color: #fff; text-transform: uppercase; }
+.nav-it { padding: 15px 30px; color: #888; cursor: pointer; }
+.nav-it.act { background: rgba(212,175,55,0.1); color: var(--prm); }
+
+.btn { padding: 15px 25px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; text-transform: uppercase; text-align: center; text-decoration: none; display: inline-block; }
 .b-prm { background: var(--prm); color: #000; }
 .b-err { background: #E34234; color: #fff; }
 
-/* Roulette & Slots Basics */
+/* Roulette & Slots Mini-Fix */
 .roulette-wrapper { display: flex; gap: 40px; justify-content: center; align-items: flex-start; flex-wrap: wrap; }
 canvas { max-width: 100%; height: auto; background: #000; border-radius: 50%; }
 .slot-box { width: 100%; height: 420px; background: #000; border: 2px solid rgba(212, 175, 55, 0.2); display: flex; position: relative; overflow: hidden; }
