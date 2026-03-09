@@ -1,7 +1,6 @@
 import { getMoney, removeMoney, addMoney, updateStat } from '../../core/state.js';
 import { formatMoney, showToast } from '../../core/ui.js';
 
-// --- EINGEBAUTE SOUND ENGINE ---
 const Snd = {
     ctx: null,
     init() {
@@ -21,13 +20,13 @@ const Snd = {
         osc.connect(gain); gain.connect(this.ctx.destination);
         osc.start(); osc.stop(this.ctx.currentTime + dur);
     },
-    tick() { this.play(400, 'triangle', 0.05, 0.02); }, // Walzen klicken
+    tick() { this.play(400, 'triangle', 0.05, 0.02); }, 
     win() { 
         setTimeout(()=>this.play(400,'sine',0.2, 0.1), 0);
         setTimeout(()=>this.play(600,'sine',0.2, 0.1), 150);
         setTimeout(()=>this.play(800,'sine',0.4, 0.15), 300);
     },
-    ladder() { this.play(1000, 'square', 0.1, 0.02); }, // Blinken
+    ladder() { this.play(1000, 'square', 0.1, 0.02); }, 
     ladderWin() { this.play(1200, 'sine', 0.3, 0.1); },
     ladderLose() { this.play(150, 'sawtooth', 0.4, 0.1); }
 };
@@ -47,7 +46,7 @@ export const Slots = {
     
     symbolPool: [],
     isSpinning: false,
-    isAuto: false, // Auto-Spin Status
+    isAuto: false, 
     freeSpins: 0,
     currentBet: 0,
     
@@ -94,11 +93,11 @@ export const Slots = {
                         </div>
 
                         <div class="gamble-ladder-ui" id="gamble-ui">
-                            <h3 style="color:var(--prm); margin-bottom: 20px; letter-spacing:3px;">RISIKOLEITER</h3>
+                            <h3 style="color:var(--prm); margin-bottom: 10px; letter-spacing:3px; font-size:16px;">RISIKOLEITER</h3>
                             <div class="ladder-box" id="ladder-container"></div>
                             <div class="gamble-btns">
-                                <button class="btn b-acc" id="btn-gmb-collect">NEHMEN</button>
-                                <button class="btn b-err" id="btn-gmb-risk" style="background:#800000; color:#fff;">DRÜCKEN</button>
+                                <button class="btn b-acc" id="btn-gmb-collect" style="flex:1;">NEHMEN</button>
+                                <button class="btn b-err" id="btn-gmb-risk" style="flex:1; background:#800000; color:#fff;">DRÜCKEN</button>
                             </div>
                         </div>
 
@@ -112,7 +111,7 @@ export const Slots = {
                     <div id="sl-display" style="text-align:center; font-size:24px; color:var(--sec); margin:25px 0; letter-spacing:2px; height:30px;">BEREIT</div>
 
                     <div class="grid" id="sl-controls" style="grid-template-columns: 1fr 1fr 2fr; align-items: end;">
-                        <div><label>Einsatz (0.10 - 100)</label><input type="number" id="sl-bet" value="1" min="0.10" max="100" step="0.10"></div>
+                        <div><label>Einsatz / Linie</label><input type="number" id="sl-bet" value="1" min="0.10" max="100" step="0.10"></div>
                         <div><label>Linien (1-10)</label><input type="number" id="sl-lines" value="10" min="1" max="10"></div>
                         <div style="display:flex; gap:10px;">
                             <button class="btn b-drk" id="sl-btn-auto" style="flex:1;">AUTO</button>
@@ -136,7 +135,6 @@ export const Slots = {
         this.resizeCanvas();
         window.addEventListener('resize', () => this.resizeCanvas());
 
-        // Buttons binden
         document.getElementById('sl-btn-spin').onclick = () => { this.isAuto = false; this.updateAutoUI(); this.spin(); };
         document.getElementById('sl-btn-auto').onclick = () => this.toggleAuto();
         
@@ -161,11 +159,8 @@ export const Slots = {
         return this.symbolPool[Math.floor(Math.random() * this.symbolPool.length)];
     },
 
-    // Helfer für das Design der Buchstaben
     formatSymbol(s) {
-        if(['J','Q','K','A'].includes(s)) {
-            return `<div class="sl-sym sym-let sym-${s}">${s}</div>`;
-        }
+        if(['J','Q','K','A'].includes(s)) return `<div class="sl-sym sym-let sym-${s}">${s}</div>`;
         const extraClass = s === '⭐' ? 'sym-scatter' : '';
         return `<div class="sl-sym ${extraClass}">${s}</div>`;
     },
@@ -188,22 +183,31 @@ export const Slots = {
     async spin() {
         if(this.isSpinning || this.gambleActive) return;
 
-        Snd.init(); // Sound Engine aktivieren
+        Snd.init(); 
         
         const bet = parseFloat(document.getElementById('sl-bet').value);
         const lines = parseInt(document.getElementById('sl-lines').value) || 10;
         
         this.currentBet = bet; 
         
-        if(this.freeSpins <= 0 && !removeMoney(this.currentBet * lines)) {
-            showToast("Nicht genügend Guthaben!", "error");
-            this.isAuto = false; this.updateAutoUI();
-            return;
+        // FIX: Geld abziehen und UI direkt aktualisieren
+        if(this.freeSpins <= 0) {
+            const totalCost = this.currentBet * lines;
+            if(!removeMoney(totalCost)) {
+                showToast("Nicht genügend Guthaben!", "error");
+                this.isAuto = false; this.updateAutoUI();
+                return;
+            }
+            // Das hier hat gefehlt: HUD sofort updaten!
+            window.dispatchEvent(new CustomEvent('updateHUD'));
         }
 
         this.isSpinning = true;
         document.getElementById('sl-btn-spin').disabled = true;
-        document.getElementById('sl-btn-auto').disabled = true;
+        
+        // FIX: Auto-Button bleibt klickbar, damit man ihn abbrechen kann!
+        document.getElementById('sl-btn-auto').disabled = false;
+        
         document.getElementById('sl-display').innerText = this.freeSpins > 0 ? `FREE SPIN (${this.freeSpins})` : "SPINNING...";
         this.ctx.clearRect(0,0,2000,2000);
         
@@ -214,7 +218,12 @@ export const Slots = {
 
         for(let i=0; i<5; i++) {
             let html = '';
-            for(let j=0; j<15; j++) html += `<div class="sl-sym" style="filter:blur(3px)">🎰</div>`;
+            
+            // FIX: Echte Symbole fliegen vorbei statt das Emoji
+            for(let j=0; j<15; j++) {
+                const rs = this.getRandomSymbol();
+                html += `<div class="sl-sym" style="filter:blur(3px); opacity:0.8;">${['J','Q','K','A'].includes(rs) ? `<span class="sym-let sym-${rs}">${rs}</span>` : rs}</div>`;
+            }
             
             for(let k=0; k<3; k++) {
                 const s = this.getRandomSymbol();
@@ -227,13 +236,12 @@ export const Slots = {
             this.reels[i].innerHTML = html;
             
             setTimeout(() => {
-                Snd.tick(); // Sound bei jedem Walzen-Start
+                Snd.tick(); 
                 this.reels[i].style.transition = `transform ${this.config.spinDuration + (i*250)}ms cubic-bezier(0.1, 0, 0.1, 1.1)`;
                 this.reels[i].style.transform = `translateY(-${15 * symbolHeight}px)`;
-            }, 20 + (i*100)); // Leicht versetzter Start
+            }, 20 + (i*100)); 
         }
 
-        // Dynamische Linien-Auswertung übergeben
         setTimeout(() => this.evaluate(grid, lines), this.config.spinDuration + 1200);
     },
 
@@ -252,7 +260,6 @@ export const Slots = {
             Snd.win();
         }
 
-        // Nur bis zu den eingestellten Linien auswerten
         const linesToCheck = Math.min(activeLines, 10);
 
         for(let i=0; i < linesToCheck; i++) {
@@ -291,7 +298,6 @@ export const Slots = {
             
             if(totalWin >= this.currentBet * 50) this.showBigWinOverlay("BIG WIN!");
 
-            // Wenn Freispiele oder AUTO-Modus aktiv sind -> Gewinn direkt aufs Konto, Leiter überspringen!
             if(this.freeSpins > 0 || this.isAuto) {
                 addMoney(totalWin);
                 window.dispatchEvent(new CustomEvent('updateHUD'));
@@ -358,7 +364,7 @@ export const Slots = {
     startLadderBlink() {
         clearInterval(this.gambleInterval);
         this.gambleInterval = setInterval(() => {
-            Snd.ladder(); // Beep Beep Sound
+            Snd.ladder(); 
             this.flashState = !this.flashState;
             const upIdx = Math.min(this.currentLadderIdx + 1, this.config.ladderSteps.length - 1);
             const downIdx = this.currentLadderIdx === 1 ? 0 : this.currentLadderIdx - 1;
@@ -387,7 +393,7 @@ export const Slots = {
             if(this.currentLadderIdx === this.config.ladderSteps.length - 1) {
                 setTimeout(() => this.collectGamble(), 1000);
             } else {
-                setTimeout(() => this.startLadderBlink(), 300); // Kurze Pause vor neuem Blinken
+                setTimeout(() => this.startLadderBlink(), 300); 
             }
         } else {
             Snd.ladderLose();
@@ -415,7 +421,6 @@ export const Slots = {
         this.gambleActive = false;
         document.getElementById('gamble-ui').style.display = 'none';
         document.getElementById('sl-btn-spin').disabled = false;
-        document.getElementById('sl-btn-auto').disabled = false;
         document.getElementById('sl-controls').style.display = 'grid';
         
         if(this.freeSpins > 0 || this.isAuto) setTimeout(() => this.spin(), 1000);
