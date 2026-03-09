@@ -2,87 +2,57 @@
    NOIR ARENA - MASTER CONTROLLER
    ========================================== */
 
-// 1. IMPORTE (Die Bausteine laden)
 import { loadState, getMoney } from './core/state.js';
-import { updateHUD, initNavigation, showToast } from './core/ui.js';
-
-// Hier binden wir die Spiele ein, sobald wir sie erstellt haben
+import { updateHUD, initNavigation, showToast, setActiveNav } from './core/ui.js';
 import { Slots } from './games/casino/slots.js';
 
-// Das Herzstück: Hier landen alle Spiele in der Mitte
 const appRoot = document.getElementById('app-root');
 
-/**
- * Initialisiert die gesamte Arena beim Start
- */
 function initApp() {
     console.log("Noir Arena: System-Check läuft...");
     
     try {
-        // Daten aus dem Speicher holen
         loadState();
-        
-        // HUD (Geldanzeige oben rechts) aktualisieren
-        const currentMoney = getMoney();
-        updateHUD(currentMoney);
-        
-        // Sidebar-Navigation aktivieren
+        updateHUD(getMoney());
         initNavigation(handleRoute);
-        
-        // Mit der Lobby (Startbildschirm) beginnen
         handleRoute('lobby');
         
-        console.log("Noir Arena: System erfolgreich gestartet.");
         showToast('Willkommen im Noir Club.', 'info');
-
     } catch (err) {
         console.error("KRITISCHER SYSTEMFEHLER:", err);
         showToast('Fehler beim Laden der Module!', 'error');
     }
 }
 
-/**
- * Der Router: Tauscht den Inhalt in der Mitte dynamisch aus
- * @param {string} route - Der Name des Ziels (z.B. 'slots', 'lobby')
- */
 async function handleRoute(route) {
     console.log(`Routing: Wechsel zu Modul [${route}]`);
     
-    // Weicher Übergang: Erst ausblenden
+    // NEU: Menü links sofort updaten!
+    setActiveNav(route);
+    
     appRoot.style.opacity = '0';
     
-    // Kurze Pause für die Animation
     setTimeout(() => {
-        // Inhalt leeren, bevor Neues kommt
         appRoot.innerHTML = '';
 
         switch(route) {
             case 'lobby':
                 renderLobby();
                 break;
-                
             case 'slots':
-                // Das Slot-Modul rendern und starten
                 appRoot.innerHTML = Slots.render();
                 Slots.init();
                 break;
-            
-            // Hier kommen später Roulette, Blackjack etc. dazu
             default:
                 renderPlaceholder(route);
                 break;
         }
         
-        // Wieder einblenden
         appRoot.style.opacity = '1';
-        // Seite nach oben scrollen
         appRoot.scrollTop = 0;
     }, 200);
 }
 
-/**
- * Rendert die Startseite (Lounge)
- */
 function renderLobby() {
     appRoot.innerHTML = `
         <div class="screen act">
@@ -111,13 +81,9 @@ function renderLobby() {
         </div>
     `;
 
-    // Event-Listener für die Lobby-Buttons
     document.getElementById('lobby-slots-btn')?.addEventListener('click', () => handleRoute('slots'));
 }
 
-/**
- * Zeigt einen Platzhalter für noch nicht fertige Spiele
- */
 function renderPlaceholder(name) {
     appRoot.innerHTML = `
         <div class="screen act">
@@ -131,8 +97,5 @@ function renderPlaceholder(name) {
     document.getElementById('placeholder-back')?.addEventListener('click', () => handleRoute('lobby'));
 }
 
-// Globales Event-Handling (falls wir von überall navigieren wollen)
 window.addEventListener('updateHUD', () => updateHUD(getMoney()));
-
-// App starten, wenn das Dokument bereit ist
 document.addEventListener('DOMContentLoaded', initApp);
