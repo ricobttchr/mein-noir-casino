@@ -181,3 +181,27 @@ label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing:
 .gamble-btns .btn { 
     padding: 10px 10px; font-size: 12px; 
 }
+
+/* ==========================================
+   SPIEL-MODULE: BOOK OF NOIR
+   ========================================== */
+.book-theme {
+    border-color: #b8860b !important;
+    box-shadow: inset 0 0 60px rgba(184, 134, 11, 0.15) !important;
+}
+.sym-book { animation: floatBook 2s ease-in-out infinite; filter: drop-shadow(0 0 10px #D4AF37); }
+@keyframes floatBook { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+/* Die Animation, wenn sich das Symbol über die ganze Walze ausbreitet */
+.expanding-overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 20;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 100px; color: var(--prm);
+    animation: expandSym 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    border: 2px solid var(--prm); border-radius: 8px;
+    box-shadow: 0 0 30px rgba(212,175,55,0.4);
+}
+@keyframes expandSym {
+    0% { transform: scaleY(0); opacity: 0; }
+    100% { transform: scaleY(1); opacity: 1; }
+}
