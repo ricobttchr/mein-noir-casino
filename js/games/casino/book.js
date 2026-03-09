@@ -1,0 +1,307 @@
+import { getMoney, removeMoney, addMoney, updateStat } from '../../core/state.js';
+import { formatMoney, showToast } from '../../core/ui.js';
+
+// Sound Engine
+const Snd = {
+    ctx: null,
+    init() {
+        if(!this.ctx) { window.AudioContext = window.AudioContext || window.webkitAudioContext; this.ctx = new AudioContext(); }
+        if(this.ctx.state === 'suspended') this.ctx.resume();
+    },
+    play(freq, type, dur, vol=0.05) {
+        if(!this.ctx) return;
+        const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+        gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + dur);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(); osc.stop(this.ctx.currentTime + dur);
+    },
+    tick() { this.play(300, 'triangle', 0.05, 0.02); }, 
+    win() { setTimeout(()=>this.play(400,'sine',0.2,0.1),0); setTimeout(()=>this.play(600,'sine',0.2,0.1),150); },
+    expand() { this.play(150, 'sawtooth', 0.8, 0.1); setTimeout(()=>this.play(300, 'square', 0.8, 0.1), 200); }
+};
+
+export const BookSlot = {
+    config: {
+        // High Volatility Profil
+        symbolWeights: {
+            '10': 45, 'J': 40, 'Q': 35, 'K': 30, 'A': 25,
+            '🦅': 12, '🐕': 10, '🛕': 6, '🤠': 3,
+            '📘': 5 // Scatter & Wild
+        },
+        spinDuration: 2000,
+        lines: [[1,1,1,1,1],[0,0,0,0,0],[2,2,2,2,2],[0,1,2,1,0],[2,1,0,1,2],[0,0,1,0,0],[2,2,1,2,2],[1,0,0,0,1],[1,2,2,2,1],[0,1,1,1,0]]
+    },
+    
+    symbolPool: [], isSpinning: false, isAuto: false, 
+    freeSpins: 0, currentBet: 0,
+    specialSymbol: null, // Für die Freispiele
+
+    render() {
+        return `
+            <div class="screen act">
+                <div class="pnl" style="max-width: 1000px; margin: 0 auto; width: 100%;">
+                    
+                    <div class="ttl" style="margin-bottom: 15px; display:flex; justify-content:space-between; align-items:center;">
+                        <select id="sl-selector" style="padding: 5px; font-size: 14px; background: transparent; border: 1px solid var(--prm); color:var(--prm); width:auto;">
+                            <option value="book">Book of Noir</option>
+                            <option value="classic">Classic Noir</option>
+                        </select>
+                        <span id="sl-fs-counter" style="color:var(--prm); display:none; font-weight:bold;">
+                            FREISPIELE: <span id="fs-num">0</span> <span id="fs-sym" style="margin-left:10px; font-size:20px;"></span>
+                        </span>
+                    </div>
+                    
+                    <div class="slot-box book-theme" id="sl-main-box">
+                        <canvas id="sl-canvas"></canvas>
+                        <div class="sl-rl" id="sl-r0"></div>
+                        <div class="sl-rl" id="sl-r1"></div>
+                        <div class="sl-rl" id="sl-r2"></div>
+                        <div class="sl-rl" id="sl-r3"></div>
+                        <div class="sl-rl" id="sl-r4"></div>
+                    </div>
+
+                    <div id="sl-display" style="text-align:center; font-size:24px; color:var(--sec); margin:25px 0; letter-spacing:2px; height:30px;">BEREIT</div>
+
+                    <div class="grid" id="sl-controls" style="grid-template-columns: 1fr 1fr 2fr; align-items: end;">
+                        <div><label>Einsatz / Linie</label><input type="number" id="sl-bet" value="1" min="0.10" max="100" step="0.10"></div>
+                        <div><label>Linien (1-10)</label><input type="number" id="sl-lines" value="10" min="1" max="10"></div>
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn b-drk" id="sl-btn-auto" style="flex:1;">AUTO</button>
+                            <button class="btn b-prm" id="sl-btn-spin" style="flex:2;">SPIN</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    init() {
+        this.canvas = document.getElementById('sl-canvas'); this.ctx = this.canvas.getContext('2d');
+        this.reels = [0,1,2,3,4].map(i => document.getElementById(`sl-r${i}`));
+        
+        for (const [sym, weight] of Object.entries(this.config.symbolWeights)) {
+            for (let i = 0; i < weight; i++) this.symbolPool.push(sym);
+        }
+
+        this.resizeCanvas(); window.addEventListener('resize', () => this.resizeCanvas());
+
+        document.getElementById('sl-btn-spin').onclick = () => { this.isAuto = false; this.updateAutoUI(); this.spin(); };
+        document.getElementById('sl-btn-auto').onclick = () => this.toggleAuto();
+        
+        document.getElementById('sl-selector').onchange = (e) => {
+            if(e.target.value === 'classic') window.noirRoute('slots');
+        };
+
+        this.reels.forEach(r => r.innerHTML = '<div class="sl-sym">🛕</div>'.repeat(3));
+    },
+
+    resizeCanvas() {
+        if(!this.canvas) return;
+        const rect = this.canvas.parentElement.getBoundingClientRect();
+        this.canvas.width = rect.width * window.devicePixelRatio;
+        this.canvas.height = rect.height * window.devicePixelRatio;
+        this.ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    },
+
+    getRandomSymbol() { return this.symbolPool[Math.floor(Math.random() * this.symbolPool.length)]; },
+
+    formatSymbol(s) {
+        if(['10','J','Q','K','A'].includes(s)) return `<div class="sl-sym sym-let sym-${s}">${s}</div>`;
+        const extraClass = s === '📘' ? 'sym-book' : '';
+        return `<div class="sl-sym ${extraClass}">${s}</div>`;
+    },
+
+    toggleAuto() {
+        this.isAuto = !this.isAuto; this.updateAutoUI();
+        if(this.isAuto && !this.isSpinning) this.spin();
+    },
+
+    updateAutoUI() {
+        const btn = document.getElementById('sl-btn-auto');
+        if(this.isAuto) { btn.style.background = 'var(--prm)'; btn.style.color = '#000'; btn.innerText = 'STOP AUTO'; } 
+        else { btn.style.background = ''; btn.style.color = ''; btn.innerText = 'AUTO'; }
+    },
+
+    async spin() {
+        if(this.isSpinning) return;
+        Snd.init(); 
+        
+        const bet = parseFloat(document.getElementById('sl-bet').value);
+        const lines = parseInt(document.getElementById('sl-lines').value) || 10;
+        this.currentBet = bet; 
+        
+        if(this.freeSpins <= 0) {
+            if(!removeMoney(this.currentBet * lines)) {
+                showToast("Nicht genügend Guthaben!", "error");
+                this.isAuto = false; this.updateAutoUI(); return;
+            }
+            window.dispatchEvent(new CustomEvent('updateHUD'));
+            this.specialSymbol = null; // Reset
+        }
+
+        this.isSpinning = true;
+        document.getElementById('sl-btn-spin').disabled = true;
+        document.getElementById('sl-display').innerText = this.freeSpins > 0 ? `FREE SPIN` : "SPINNING...";
+        this.ctx.clearRect(0,0,2000,2000);
+        
+        if(this.freeSpins > 0) { this.freeSpins--; this.updateFreeSpinsUI(); }
+
+        let grid = [[],[],[],[],[]];
+        const symbolHeight = this.reels[0].offsetHeight / 3;
+
+        for(let i=0; i<5; i++) {
+            let html = '';
+            for(let j=0; j<15; j++) { html += `<div class="sl-sym" style="filter:blur(4px); opacity:0.6;">🛕</div>`; }
+            for(let k=0; k<3; k++) {
+                const s = this.getRandomSymbol();
+                grid[i].push(s);
+                html += this.formatSymbol(s);
+            }
+            this.reels[i].style.transition = 'none';
+            this.reels[i].style.transform = 'translateY(0)';
+            this.reels[i].innerHTML = html;
+            
+            setTimeout(() => {
+                Snd.tick(); 
+                this.reels[i].style.transition = `transform ${this.config.spinDuration + (i*300)}ms cubic-bezier(0.1, 0, 0.1, 1.1)`;
+                this.reels[i].style.transform = `translateY(-${15 * symbolHeight}px)`;
+            }, 20 + (i*150)); 
+        }
+
+        setTimeout(() => this.evaluate(grid, lines), this.config.spinDuration + 1400);
+    },
+
+    async evaluate(grid, activeLines) {
+        let totalWin = 0; let scatters = 0;
+        const linesToCheck = Math.min(activeLines, 10);
+
+        // 1. Scatter zählen & Freispiele checken
+        grid.forEach(col => col.forEach(s => { if(s === '📘') scatters++; }));
+
+        if(scatters >= 3) {
+            Snd.win();
+            totalWin += this.currentBet * activeLines * (scatters === 3 ? 2 : scatters === 4 ? 20 : 200);
+            this.freeSpins += 10;
+            
+            if(!this.specialSymbol) {
+                // Ein zufälliges Spezial-Symbol auswählen (kein Buch)
+                const validSyms = ['10','J','Q','K','A','🦅','🐕','🛕','🤠'];
+                this.specialSymbol = validSyms[Math.floor(Math.random() * validSyms.length)];
+                this.showBigWinOverlay(`10 FREISPIELE!\nSYMBOL: ${this.specialSymbol}`);
+                setTimeout(() => this.updateFreeSpinsUI(), 2500);
+            } else {
+                this.showBigWinOverlay("10 WEITERE FREISPIELE!");
+            }
+        }
+
+        // 2. Normale Linien-Auswertung (Buch ist Wild!)
+        for(let i=0; i < linesToCheck; i++) {
+            const p = this.config.lines[i];
+            let targetSym = grid[0][p[0]], match = 1;
+
+            for(let c=1; c<5; c++) {
+                const currentSym = grid[c][p[c]];
+                if(targetSym === '📘' && currentSym !== '📘') targetSym = currentSym;
+                if(currentSym === targetSym || currentSym === '📘') match++; else break;
+            }
+
+            totalWin += this.calculateLineWin(targetSym, match);
+        }
+
+        // 3. EXPANDING SYMBOL LOGIK (Nur in Freispielen)
+        if(this.specialSymbol) {
+            let reelsWithSymbol = [];
+            for(let i=0; i<5; i++) {
+                // Bei Expanding Features zählt das Buch NICHT als Ersatz!
+                if(grid[i].includes(this.specialSymbol)) reelsWithSymbol.push(i);
+            }
+
+            const minNeeded = ['10','J','Q','K','A'].includes(this.specialSymbol) ? 3 : 2;
+
+            if(reelsWithSymbol.length >= minNeeded) {
+                // Kurze Pause, dann Expandieren!
+                await new Promise(r => setTimeout(r, 800));
+                Snd.expand();
+
+                reelsWithSymbol.forEach(rIdx => {
+                    const overlay = document.createElement('div');
+                    overlay.className = 'expanding-overlay';
+                    overlay.innerHTML = this.formatSymbol(this.specialSymbol);
+                    this.reels[rIdx].appendChild(overlay);
+                });
+
+                // Gewinn berechnen (Ausbreitung bedeutet: Es zahlt auf ALLEN aktiven Linien!)
+                const expandMultiplier = this.calculateLineWin(this.specialSymbol, reelsWithSymbol.length, true);
+                const expandWin = expandMultiplier * activeLines; // Vollbild-Mechanik!
+                
+                totalWin += expandWin;
+
+                await new Promise(r => setTimeout(r, 1500)); // Animation wirken lassen
+                document.querySelectorAll('.expanding-overlay').forEach(el => el.remove());
+            }
+        }
+
+        // 4. Gewinn auszahlen
+        if(totalWin > 0) {
+            Snd.win();
+            document.getElementById('sl-display').innerText = `GEWINN: ${formatMoney(totalWin)}`;
+            document.getElementById('sl-display').style.color = 'var(--suc)';
+            if(totalWin >= this.currentBet * activeLines * 50) this.showBigWinOverlay("MEGA WIN!");
+
+            addMoney(totalWin);
+            window.dispatchEvent(new CustomEvent('updateHUD'));
+        } else {
+            document.getElementById('sl-display').innerText = "KEIN GEWINN";
+            document.getElementById('sl-display').style.color = 'var(--sec)';
+        }
+
+        setTimeout(() => this.resetSpinState(), totalWin > 0 ? 1500 : 500);
+    },
+
+    calculateLineWin(sym, match, isExpand = false) {
+        if(match < 2) return 0;
+        let mult = 0;
+        // High Pays zahlen ab 2 Symbolen
+        if(['🤠'].includes(sym)) mult = match===2?10 : match===3?100 : match===4?1000 : 5000;
+        else if(['🛕'].includes(sym)) mult = match===2?5 : match===3?40 : match===4?400 : 2000;
+        else if(['🦅','🐕'].includes(sym)) mult = match===2?5 : match===3?30 : match===4?100 : 750;
+        else if(['A','K'].includes(sym) && match>=3) mult = match===3?5 : match===4?40 : 150;
+        else if(['10','J','Q'].includes(sym) && match>=3) mult = match===3?5 : match===4?25 : 100;
+        else if(sym === '📘' && match>=3 && !isExpand) mult = match===3?20 : match===4?200 : 2000;
+        
+        return mult * this.currentBet;
+    },
+
+    showBigWinOverlay(text) {
+        const box = document.getElementById('sl-main-box');
+        const overlay = document.createElement('div');
+        overlay.className = 'big-win-overlay';
+        overlay.innerText = text;
+        box.appendChild(overlay);
+        setTimeout(() => overlay.remove(), 3000);
+    },
+
+    resetSpinState() {
+        this.isSpinning = false;
+        document.getElementById('sl-btn-spin').disabled = false;
+        document.getElementById('sl-btn-auto').disabled = false;
+        if(this.freeSpins > 0 || this.isAuto) setTimeout(() => this.spin(), 800);
+        else if (this.freeSpins === 0 && this.specialSymbol) {
+            this.specialSymbol = null; // Freispiele vorbei
+            this.updateFreeSpinsUI();
+        }
+    },
+
+    updateFreeSpinsUI() {
+        const el = document.getElementById('sl-fs-counter');
+        if(this.freeSpins > 0 || this.specialSymbol) {
+            el.style.display = 'inline';
+            document.getElementById('fs-num').innerText = this.freeSpins;
+            document.getElementById('fs-sym').innerText = this.specialSymbol || '';
+        } else {
+            el.style.display = 'none';
+        }
+    }
+};
