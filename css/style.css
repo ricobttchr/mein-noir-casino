@@ -154,3 +154,29 @@ label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing:
     border: 1px solid #333; border-radius: 4px; transition: 0.2s;
 }
 .gamble-step.act { color: #000; background: var(--prm); box-shadow: 0 0 15px var(--prm); font-weight: bold; transform: scale(1.1); }
+
+/* --- INFO MODAL (PAYTABLE) --- */
+.slot-modal {
+    position: absolute; inset: 0; background: rgba(5,5,5,0.95); z-index: 200;
+    display: none; flex-direction: column; padding: 20px; color: #fff; overflow-y: auto;
+    border-radius: 12px; backdrop-filter: blur(10px); text-align: left;
+}
+.slot-modal.act { display: flex; animation: fIn 0.3s ease; }
+.pt-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 14px; }
+.pt-sym { font-size: 20px; width: 40px; text-align: center; }
+
+/* --- ECHTE RISIKOLEITER --- */
+.gamble-ladder-ui {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.95); z-index: 50;
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+}
+.ladder-box {
+    display: flex; flex-direction: column-reverse; gap: 4px; background: #111;
+    padding: 10px; border: 2px solid var(--prm); border-radius: 8px; width: 200px;
+}
+.l-step {
+    text-align: center; padding: 6px; font-family: monospace; font-size: 18px; color: #555;
+    background: #000; border: 1px solid #333; font-weight: bold; transition: all 0.1s;
+}
+.l-step.act { color: #000; background: var(--prm); box-shadow: 0 0 15px var(--prm); transform: scale(1.05); }
+.l-step.flash { background: #fff; color: #000; } /* Für das Blinken */
