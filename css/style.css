@@ -82,30 +82,25 @@ label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing:
     width: 100%; 
     height: 400px; 
     background: #050505; 
-    border: 1px solid var(--brd); 
+    border: 2px solid var(--brd); 
     border-radius: 12px; 
     display: flex; 
     gap: 8px; 
-    padding: 10px; 
+    /* Padding entfernt, damit Overflow perfekt abschneidet! */
     position: relative; 
     overflow: hidden; 
-    box-shadow: inset 0 0 50px rgba(0,0,0,0.8); 
+    box-shadow: inset 0 0 50px rgba(0,0,0,0.9); 
 }
 
-#sl-canvas { 
-    position: absolute; 
-    inset: 0; 
-    z-index: 10; 
-    pointer-events: none; 
-    width: 100%; 
-    height: 100%; 
-}
+#sl-canvas { position: absolute; inset: 0; z-index: 10; pointer-events: none; width: 100%; height: 100%; }
 
 .sl-rl { 
     flex: 1; 
     display: flex; 
     flex-direction: column; 
     will-change: transform; 
+    /* Padding nach innen verlegt */
+    padding-top: 5px;
 }
 
 .sl-sym { 
@@ -113,17 +108,49 @@ label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing:
     display: flex; 
     align-items: center; 
     justify-content: center; 
-    font-size: 60px; /* Feste Größe für Desktop */
+    font-size: 60px; 
     background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent); 
-    margin-bottom: 4px; 
+    margin-bottom: 2px; 
     border-radius: 8px; 
 }
 
-/* Freispiel-Animation */
-.free-spin-fx { 
-    animation: glow 1s infinite alternate; 
+/* --- NEUE ANIMATIONEN --- */
+
+/* Animiertes Scatter Symbol */
+.sym-scatter {
+    animation: spinPulse 1.5s infinite linear;
+    text-shadow: 0 0 20px var(--prm);
 }
-@keyframes glow { 
-    from { box-shadow: 0 0 10px var(--prm); } 
-    to { box-shadow: 0 0 30px var(--prm), inset 0 0 20px var(--prm); } 
+@keyframes spinPulse {
+    0% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(1.15) rotate(10deg); }
+    100% { transform: scale(1) rotate(0deg); }
 }
+
+/* Big Win Overlay */
+.big-win-overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.85);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 100; font-size: 55px; color: var(--prm); font-weight: 900;
+    text-shadow: 0 0 40px var(--prm); letter-spacing: 5px;
+    animation: bigWinPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+@keyframes bigWinPop {
+    0% { transform: scale(0.5); opacity: 0; }
+    50% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Risikoleiter UI */
+.gamble-box {
+    display: none; justify-content: space-between; gap: 15px; margin-top: 15px;
+}
+.gamble-ladder {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.95); z-index: 50;
+    display: flex; flex-direction: column-reverse; align-items: center; justify-content: center; gap: 5px;
+}
+.gamble-step {
+    padding: 5px 20px; font-family: monospace; font-size: 18px; color: #555;
+    border: 1px solid #333; border-radius: 4px; transition: 0.2s;
+}
+.gamble-step.act { color: #000; background: var(--prm); box-shadow: 0 0 15px var(--prm); font-weight: bold; transform: scale(1.1); }
